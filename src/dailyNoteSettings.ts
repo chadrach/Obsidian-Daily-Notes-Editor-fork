@@ -4,8 +4,11 @@ import { App, debounce, PluginSettingTab, Setting, Modal } from "obsidian";
 export interface DailyNoteSettings {
     hideFrontmatter: boolean;
     hideBacklinks: boolean;
+    hideUnreachedDates: boolean;
     createAndOpenOnStartup: boolean;
     useArrowUpOrDownToNavigate: boolean;
+    autoFocus: boolean;
+    switchToExisting: boolean;
 
     preset: {
         type: "folder" | "tag";
@@ -16,8 +19,11 @@ export interface DailyNoteSettings {
 export const DEFAULT_SETTINGS: DailyNoteSettings = {
     hideFrontmatter: false,
     hideBacklinks: false,
+    hideUnreachedDates: false,
     createAndOpenOnStartup: false,
     useArrowUpOrDownToNavigate: false,
+    autoFocus: false,
+    switchToExisting: false,
     preset: [],
 };
 
@@ -114,6 +120,44 @@ export class DailyNoteSettingTab extends PluginSettingTab {
                     .setValue(settings.useArrowUpOrDownToNavigate)
                     .onChange(async (value) => {
                         this.plugin.settings.useArrowUpOrDownToNavigate = value;
+                        this.applySettingsUpdate();
+                    })
+            );
+
+        new Setting(containerEl)
+            .setName('Hide future dates')
+            .setDesc('Hide the diary entries for dates that have not yet arrived.')
+            .addToggle(toggle => toggle
+                .setValue(settings.hideUnreachedDates)
+                .onChange(async (value) => {
+                    this.plugin.settings.hideUnreachedDates = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName("Auto focus today's note")
+            .setDesc(
+                "Automatically focus today's note and move the cursor to the end of the document"
+            )
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(settings.autoFocus)
+                    .onChange(async (value) => {
+                        this.plugin.settings.autoFocus = value;
+                        this.applySettingsUpdate();
+                    })
+            );
+
+        new Setting(containerEl)
+            .setName("Switch to existing editor")
+            .setDesc(
+                "If an daily notes editor is already open, switch to it rather than open it on a new tab"
+            )
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(settings.switchToExisting)
+                    .onChange(async (value) => {
+                        this.plugin.settings.switchToExisting = value;
                         this.applySettingsUpdate();
                     })
             );

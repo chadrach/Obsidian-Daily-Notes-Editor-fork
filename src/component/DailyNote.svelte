@@ -1,51 +1,72 @@
 <script lang="ts">
     import type DailyNoteViewPlugin from "../dailyNoteViewIndex";
-    import { MarkdownView, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
+    import { MarkdownView, TAbstractFile, TFile, WorkspaceLeaf, moment, App } from "obsidian";
     import { spawnLeafView } from "../leafView";
+    import { getDailyNoteSettings, DEFAULT_DAILY_NOTE_FORMAT } from "obsidian-daily-notes-interface";
     import { onDestroy, onMount } from "svelte";
+
+    /**
+     * Check whether any other file in the vault links to the given file.
+     * Uses the metadata cache's resolvedLinks map for an O(n) scan.
+     */
+    function fileHasBacklinks(app: App, file: TFile): boolean {
+        const resolvedLinks = app.metadataCache.resolvedLinks;
+        for (const sourcePath in resolvedLinks) {
+            if (sourcePath === file.path) continue;
+            if (file.path in resolvedLinks[sourcePath]) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     export let file: TAbstractFile;
     export let plugin: DailyNoteViewPlugin;
     export let leaf: WorkspaceLeaf;
     export let shouldRender: boolean = true;
+    export let autoFocus: boolean = false;
 
     let editorEl: HTMLElement;
     let containerEl: HTMLElement;
     let title: string;
+    let rawTitle: string;
 
     let rendered: boolean = false;
 
     let createdLeaf: WorkspaceLeaf;
-    let unloadTimeout: number | null = null;
-    let editorHeight: number = 100; // Default minimum height
-    
+
     // Track if this component is being destroyed
     let isDestroying = false;
-    
+
     // Track if the note is collapsed
     let isCollapsed: boolean = false;
 
     onMount(() => {
         if (file instanceof TFile) {
-            title = file.basename;
+            const basename = file.basename;
+            rawTitle = basename;
+            const dateFormat = getDailyNoteSettings().format || DEFAULT_DAILY_NOTE_FORMAT;
+            const parsed = moment(basename, dateFormat, true);
+            title = parsed.isValid() ? parsed.format("dddd, MMMM Do YYYY") : basename;
         }
     });
 
     console.log(shouldRender, rendered)
 
+    // Load editor when shouldRender becomes true; once loaded, never unload
     $: if (editorEl && shouldRender && !rendered) {
         showEditor();
-    } else if (editorEl && !shouldRender && rendered) {
-        scheduleUnload();
     }
 
     onDestroy(() => {
         isDestroying = true;
-        if (unloadTimeout) {
-            window.clearTimeout(unloadTimeout);
-        }
         if (rendered && createdLeaf) {
-            unloadEditor();
+            try {
+                if (createdLeaf.detach) createdLeaf.detach();
+                if (editorEl) editorEl.empty();
+            } catch (e) {
+                console.error("Error cleaning up editor:", e);
+            }
         }
     });
 
@@ -53,20 +74,17 @@
         if (!(file instanceof TFile)) return;
         if (rendered) return;
         if (isDestroying) return;
-        
-        // Clear any pending unload
-        if (unloadTimeout) {
-            window.clearTimeout(unloadTimeout);
-            unloadTimeout = null;
-        }
 
         try {
             // Use safe type checking before accessing basename
             const fileName = file instanceof TFile ? file.basename : "unknown";
             console.log(`Loading editor for ${fileName}`);
-            
+
             [createdLeaf] = spawnLeafView(plugin, editorEl, leaf);
             createdLeaf.setPinned(true);
+
+            // Only show backlinks if the setting is enabled AND the file actually has backlinks
+            const showBacklinks = !plugin.settings.hideBacklinks && fileHasBacklinks(plugin.app, file);
 
             createdLeaf.setViewState({
                 type: "markdown",
@@ -74,7 +92,7 @@
                     file: file.path,
                     mode: "source",
                     source: false,
-                    backlinks: !plugin.settings.hideBacklinks,
+                    backlinks: showBacklinks,
                     backlinkOpts: {
                         collapseAll: false,
                         extraContext: false,
@@ -89,67 +107,19 @@
             createdLeaf.parentLeaf = leaf;
 
             rendered = true;
-            
-            // Set a small timeout to allow the editor to render completely
-            const timeout = window.setTimeout(() => {
-                if (createdLeaf && containerEl) {
-                    // Get the actual height of the editor content
-                    if(!(createdLeaf.view instanceof MarkdownView)) return; 
-                    // @ts-ignore
-                    const actualHeight = createdLeaf.view.editMode?.editor?.cm?.dom.innerHeight;
-                    if (actualHeight > 0) {
-                        editorHeight = actualHeight;
-                        // Apply the height to the container
-                        containerEl.style.minHeight = `${editorHeight}px`;
 
-                        window.clearTimeout(timeout);
+            // Handle autoFocus after editor has had time to render
+            if (autoFocus) {
+                window.setTimeout(() => {
+                    if (createdLeaf?.view instanceof MarkdownView) {
+                        const editor = createdLeaf.view.editor;
+                        editor.focus();
+                        editor.setCursor(editor.lineCount(), 0);
                     }
-                }
-            }, 400);
+                }, 400);
+            }
         } catch (error) {
             console.error("Error creating leaf view:", error);
-        }
-    }
-    
-    // Schedule unloading the editor with a delay to prevent flickering
-    function scheduleUnload() {
-        if (unloadTimeout) {
-            window.clearTimeout(unloadTimeout);
-        }
-        
-        // Use a longer timeout to prevent frequent load/unload cycles
-        unloadTimeout = window.setTimeout(() => {
-            if (!shouldRender && rendered) {
-                unloadEditor();
-            }
-        }, 1000);
-    }
-    
-    // Unload the editor to free up resources
-    function unloadEditor() {
-        if (!rendered || !createdLeaf) return;
-        
-        try {
-            // Use safe type checking before accessing basename
-            const fileName = file instanceof TFile ? file.basename : "unknown";
-            console.log(`Unloading editor for ${fileName}`);
-            
-            // Detach the leaf
-            if (createdLeaf.detach) {
-                createdLeaf.detach();
-            }
-            
-            // Clear the editor element
-            if (editorEl) {
-                editorEl.empty();
-            }
-            
-            rendered = false;
-            
-            // Keep the container height to prevent scroll jumps
-            // The height will be maintained by the min-height we set earlier
-        } catch (error) {
-            console.error("Error unloading editor:", error);
         }
     }
 
@@ -167,14 +137,14 @@
             editor.focus();
         }
     }
-    
+
     // Toggle collapse/expand state
     function toggleCollapse() {
         isCollapsed = !isCollapsed;
     }
 </script>
 
-<div class="daily-note-container" data-id='dn-editor-{file.path}' bind:this={containerEl} style="min-height: {isCollapsed ? 'auto' : editorHeight + 'px'};">
+<div class="daily-note-container" data-id='dn-editor-{file.path}' bind:this={containerEl}>
     <div class="daily-note">
         {#if title}
             <div class="daily-note-title inline-title">
@@ -187,12 +157,12 @@
                 <!-- svelte-ignore a11y-interactive-supports-focus -->
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <span role="link" class="clickable-link" on:click={handleFileIconClick} data-title={title}>{title}</span>
-                
-                
-                
+
+
+
             </div>
         {/if}
-        <div class="daily-note-editor" data-collapsed={isCollapsed} aria-hidden="true" bind:this={editorEl} data-title={title} on:click={handleEditorClick}>
+        <div class="daily-note-editor" data-collapsed={isCollapsed} aria-hidden="true" bind:this={editorEl} data-title={rawTitle} on:click={handleEditorClick}>
             {#if !rendered && shouldRender}
                 <div class="editor-placeholder">Loading...</div>
             {/if}
@@ -282,7 +252,7 @@
         color: var(--color-accent);
         text-decoration: underline;
     }
-    
+
     .editor-placeholder {
         display: flex;
         justify-content: center;
@@ -291,7 +261,7 @@
         color: var(--text-muted);
         font-style: italic;
     }
-    
+
     .collapse-button {
         cursor: pointer;
         display: flex;
@@ -303,7 +273,7 @@
         color: var(--text-muted);
         transition: background-color 0.2s ease;
     }
-    
+
     .collapse-button:hover {
         /* background-color: var(--background-modifier-hover); */
         color: var(--text-normal);

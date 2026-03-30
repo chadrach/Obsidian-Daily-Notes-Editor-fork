@@ -3,10 +3,11 @@
     import type { WorkspaceLeaf } from "obsidian";
 
     import { TFile, moment } from "obsidian";
+    import { getDateFromFile } from "obsidian-daily-notes-interface";
     import DailyNote from "./DailyNote.svelte";
     import { inview } from "svelte-inview";
     import { TimeRange, SelectionMode, TimeField } from "../types/time";
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import { FileManager, FileManagerOptions } from "../utils/fileManager";
 
 
@@ -17,13 +18,13 @@
     export let selectionMode: SelectionMode = "daily";
     export let target: string = "";
     export let timeField: TimeField = "mtime"; // 默认使用修改时间
-    
+
     const size = 1;
     let intervalId;
 
     let renderedFiles: TFile[] = [];
     let filteredFiles: TFile[] = [];
-    
+
     // Track which notes are in viewport
     let visibleNotes: Set<string> = new Set();
 
@@ -33,17 +34,18 @@
 
     // Create the file manager
     let fileManager: FileManager;
-    
+
     $: fileManagerOptions = {
         mode: selectionMode,
         target: target,
         timeRange: selectedRange,
         customRange: customRange,
         app: plugin.app,
-        timeField: timeField
+        timeField: timeField,
+        hideUnreachedDates: plugin.settings.hideUnreachedDates
     } as FileManagerOptions;
 
-    $: if (fileManager && (selectedRange !== fileManager.options.timeRange || 
+    $: if (fileManager && (selectedRange !== fileManager.options.timeRange ||
                           customRange !== fileManager.options.customRange ||
                           selectionMode !== fileManager.options.mode ||
                           target !== fileManager.options.target ||
@@ -55,7 +57,7 @@
             target: target,
             timeField: timeField
         });
-        
+
         // Reset rendered files and start filling viewport again
         renderedFiles = [];
         visibleNotes.clear();
@@ -63,9 +65,21 @@
         hasMore = filteredFiles.length > 0;
         firstLoaded = true;
         startFillViewport();
-        
+
         // Update the title element with the new range information
         updateTitleElement();
+    }
+
+    // Scroll-based fallback for loading more notes.
+    // Intersection Observer on the loader div can be unreliable on iOS during
+    // slow scrolling. This classic scroll listener ensures notes keep loading.
+    function handleScroll() {
+        const el = leaf.view.contentEl;
+        if (!el || !hasMore) return;
+        // When within 1.5x viewport height of the bottom, load more
+        if (el.scrollTop + el.clientHeight * 2.5 > el.scrollHeight) {
+            infiniteHandler();
+        }
     }
 
     onMount(() => {
@@ -73,22 +87,29 @@
         filteredFiles = fileManager.getFilteredFiles();
         hasMore = filteredFiles.length > 0;
         startFillViewport();
-        
+
         // Initialize the title element
         updateTitleElement();
+
+        // Attach scroll listener as a reliable fallback for infinite scroll
+        leaf.view.contentEl?.addEventListener("scroll", handleScroll, { passive: true });
+    });
+
+    onDestroy(() => {
+        leaf.view.contentEl?.removeEventListener("scroll", handleScroll);
     });
 
     // Function to update the title element with range information
     function updateTitleElement() {
         if (!leaf || !leaf.view || !leaf.view.titleEl) return;
-         
+
         // Get the title element and clear it
         const titleEl = leaf.view.titleEl;
         titleEl.empty();
-        
+
         // Set the base title
         let titleText = '';
-        
+
         // Add range information based on the current selection mode and range
         if (selectionMode === "daily" && selectedRange !== 'all') {
             if (selectedRange === 'custom' && customRange) {
@@ -107,7 +128,7 @@
                 titleText += ` (${timeField === 'ctime' ? 'created' : 'modified'} ${selectedRange})`;
             }
         }
-        
+
         // Set the title text
         if (titleText) {
             titleEl.setText(titleText);
@@ -148,23 +169,23 @@
 
     function ensureViewFilled() {
         if (!loaderRef) return;
-        
+
         // Get the loader element's position
         const loaderRect = loaderRef.getBoundingClientRect();
-        
+
         // Get the viewport height
         const viewportHeight = window.innerHeight;
-        
+
         // Get the content element's height (with fallback)
         const contentHeight = leaf.view.contentEl.clientHeight || leaf.view.contentEl.innerHeight || viewportHeight;
-        
+
         // Use the maximum of viewport height and content height with a buffer
         const effectiveHeight = Math.max(viewportHeight, contentHeight) + 200;
-        
+
         // Check if we need to load more content
         if (loaderRect.top < effectiveHeight) {
             infiniteHandler();
-            
+
             // Recursively check again after a short delay to ensure the view is filled
             window.setTimeout(() => {
                 if (hasMore && loaderRef && loaderRef.getBoundingClientRect().top < effectiveHeight) {
@@ -187,7 +208,7 @@
     export function tick() {
         // First check if we need to update for a new day
         check();
-        
+
         // Force a refresh of the view
         renderedFiles = renderedFiles;
     }
@@ -197,14 +218,14 @@
         const hadDailyNote = fileManager.hasCurrentDayNote();
         fileManager.checkDailyNote();
         const hasDailyNote = fileManager.hasCurrentDayNote();
-        
+
         // If the daily note status changed (e.g., we just crossed midnight),
         // refresh the file list to ensure we show the current day's daily note
-        if (hadDailyNote !== hasDailyNote || 
+        if (hadDailyNote !== hasDailyNote ||
             (selectionMode === "daily" && selectedRange !== "all")) {
             // Get updated filtered files
             filteredFiles = fileManager.getFilteredFiles();
-            
+
             // Reset rendered files and start filling viewport again if in daily mode
             if (selectionMode === "daily") {
                 renderedFiles = [];
@@ -218,12 +239,12 @@
 
     export function fileCreate(file: TFile) {
         fileManager.fileCreate(file);
-        
+
         // Update the rendered files if needed
         if (selectionMode === "daily") {
             // For daily notes, we need to check if the file should be added to the rendered files
             const filteredFiles = fileManager.getFilteredFiles();
-            if (filteredFiles.some(f => f.basename === file.basename) && 
+            if (filteredFiles.some(f => f.basename === file.basename) &&
                 !renderedFiles.some(f => f.basename === file.basename)) {
                 renderedFiles = [file, ...renderedFiles];
                 // Automatically mark the new note as visible
@@ -238,19 +259,19 @@
 
     export function fileDelete(file: TFile) {
         fileManager.fileDelete(file);
-        
+
         // Remove the file from rendered files if it exists
         renderedFiles = renderedFiles.filter((dailyNote) => {
             return dailyNote.basename !== file.basename;
         });
-        
+
         // Remove from visible notes
         if (visibleNotes.has(file.path)) {
             visibleNotes.delete(file.path);
             visibleNotes = visibleNotes;
         }
     }
-    
+
     // Handle note visibility change
     function handleNoteVisibilityChange(file: TFile, isVisible: boolean) {
         console.log("inview", isVisible)
@@ -260,6 +281,12 @@
             visibleNotes.delete(file.path);
         }
         visibleNotes = visibleNotes;
+    }
+
+    function isToday(file: TFile): boolean {
+        if (!plugin.settings.autoFocus) return false;
+        const fileDate = getDateFromFile(file, "day");
+        return fileDate?.isSame(moment(), "day") ?? false;
     }
 </script>
 
@@ -284,11 +311,12 @@
             unobserveOnEnter: false,
             root: leaf.view.contentEl
         }} on:inview_change={({ detail }) => handleNoteVisibilityChange(file, detail.inView)}>
-            <DailyNote 
-                file={file} 
-                plugin={plugin} 
-                leaf={leaf} 
+            <DailyNote
+                file={file}
+                plugin={plugin}
+                leaf={leaf}
                 shouldRender={visibleNotes.has(file.path)}
+                autoFocus={isToday(file)}
             />
         </div>
     {/each}
@@ -344,7 +372,7 @@
         margin-right: auto;
         text-align: center;
     }
-    
+
     .daily-note-wrapper {
         width: 100%;
     }

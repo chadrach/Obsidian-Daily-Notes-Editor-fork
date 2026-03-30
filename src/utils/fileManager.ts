@@ -16,6 +16,7 @@ export interface FileManagerOptions {
     customRange?: { start: Date; end: Date } | null;
     app?: App;
     timeField?: TimeField;
+    hideUnreachedDates?: boolean;
 }
 
 export class FileManager {
@@ -118,10 +119,14 @@ export class FileManager {
         } else {
             // Default sorting (by date in the filename)
             // Build notes list by date in descending order
-            for (const string of Object.keys(this.cacheDailyNotes)
-                .sort()
-                .reverse()) {
-                this.allFiles.push(<TFile>this.cacheDailyNotes[string]);
+            const today = moment().startOf('day');
+            const dateKeys = Object.keys(this.cacheDailyNotes).sort().reverse();
+            const filteredKeys = this.options.hideUnreachedDates
+                ? dateKeys.filter(date => moment(date, "YYYY-MM-DD").isSameOrBefore(today))
+                : dateKeys;
+
+            for (const dateStr of filteredKeys) {
+                this.allFiles.push(<TFile>this.cacheDailyNotes[dateStr]);
             }
 
             // Apply additional time-based sorting if needed

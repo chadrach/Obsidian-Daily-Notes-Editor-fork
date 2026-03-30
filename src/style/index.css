@@ -36,11 +36,33 @@
 
 .dn-editor .view-content {
     background: none !important;
+    -webkit-mask: none !important;
+    -webkit-mask-image: none !important;
+    mask: none !important;
+    mask-image: none !important;
+}
+
+.dn-editor .workspace-leaf-content {
+    -webkit-mask: none !important;
+    -webkit-mask-image: none !important;
+    mask: none !important;
+    mask-image: none !important;
+}
+
+.dn-editor .view-content::before,
+.dn-editor .view-content::after,
+.dn-editor .workspace-leaf-content::before,
+.dn-editor .workspace-leaf-content::after {
+    display: none !important;
 }
 
 .dn-editor .cm-scroller {
     padding: 0 !important;
     overflow-y: clip;
+    -webkit-mask: none !important;
+    -webkit-mask-image: none !important;
+    mask: none !important;
+    mask-image: none !important;
 }
 .daily-note-view .daily-note-wrapper::before {
     content: "";
@@ -92,6 +114,7 @@
 
 .daily-note-view .embedded-backlinks {
     min-height: unset !important;
+    margin-top: 2em;
 }
 
 .daily-note-view {

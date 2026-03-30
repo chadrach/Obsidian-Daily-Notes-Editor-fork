@@ -115,6 +115,15 @@ export default class DailyNoteViewPlugin extends Plugin {
 
     async openDailyNoteEditor() {
         const workspace = this.app.workspace;
+
+        if (this.settings.switchToExisting) {
+            const leaves = workspace.getLeavesOfType(DAILY_NOTE_VIEW_TYPE);
+            if (leaves.length > 0) {
+                workspace.revealLeaf(leaves[0]);
+                return;
+            }
+        }
+
         const leaf = workspace.getLeaf(true);
         await leaf.setViewState({ type: DAILY_NOTE_VIEW_TYPE });
         workspace.revealLeaf(leaf);
