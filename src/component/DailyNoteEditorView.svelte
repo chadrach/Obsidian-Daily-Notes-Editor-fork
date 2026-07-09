@@ -379,9 +379,11 @@
     function updateActiveLeaf(respectFocus: boolean) {
         const workspace: any = plugin.app.workspace;
 
-        // Only act while this view is the active tab, so a background daily
-        // notes view never hijacks the active file.
-        if (workspace.activeLeaf !== leaf) return;
+        // Only act while this view (or one of its embedded note editors) is
+        // active, so a background daily notes view never hijacks the active
+        // file. Embedded editors carry parentLeaf === this view's leaf.
+        const activeLeaf = workspace.activeLeaf;
+        if (activeLeaf !== leaf && activeLeaf?.parentLeaf !== leaf) return;
 
         const contentEl = leaf.view?.contentEl;
         if (respectFocus && contentEl) {

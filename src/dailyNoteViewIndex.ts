@@ -191,6 +191,9 @@ export default class DailyNoteViewPlugin extends Plugin {
 
     patchWorkspace() {
         let layoutChanging = false;
+        // Tracks the file of the last embedded note we announced as active, so
+        // we don't re-fire events when the same note is re-activated.
+        let lastActiveFilePath: string | null = null;
         const uninstaller = around(Workspace.prototype, {
             getActiveViewOfType: (next: any) =>
                 function (t: any) {
@@ -263,6 +266,20 @@ export default class DailyNoteViewPlugin extends Plugin {
                         if ((e.view as any).editMode) {
                             this.activeEditor = e.view;
                             (e as any).parentLeaf.view.editMode = e.view;
+
+                            // Because we redirect activation to the (already
+                            // active) parent leaf, Obsidian fires no
+                            // active-leaf-change/file-open for the embedded note.
+                            // Plugins that follow the active file (e.g. Bases)
+                            // would then never see which note is active. Emit the
+                            // events ourselves when the active note changes.
+                            const activeFile = (e.view as any).file ?? null;
+                            const activePath = activeFile?.path ?? null;
+                            if (activePath !== lastActiveFilePath) {
+                                lastActiveFilePath = activePath;
+                                this.trigger("active-leaf-change", e);
+                                this.trigger("file-open", activeFile);
+                            }
                         }
                         return;
                     }

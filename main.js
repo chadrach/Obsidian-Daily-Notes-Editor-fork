@@ -3445,7 +3445,8 @@ function instance($$self, $$props, $$invalidate) {
   function updateActiveLeaf(respectFocus) {
     var _a;
     const workspace = plugin.app.workspace;
-    if (workspace.activeLeaf !== leaf) return;
+    const activeLeaf = workspace.activeLeaf;
+    if (activeLeaf !== leaf && (activeLeaf === null || activeLeaf === void 0 ? void 0 : activeLeaf.parentLeaf) !== leaf) return;
     const contentEl = (_a = leaf.view) === null || _a === void 0 ? void 0 : _a.contentEl;
     if (respectFocus && contentEl) {
       const activeEl = contentEl.ownerDocument.activeElement;
@@ -4176,6 +4177,7 @@ class DailyNoteViewPlugin extends require$$0.Plugin {
   }
   patchWorkspace() {
     let layoutChanging = false;
+    let lastActiveFilePath = null;
     const uninstaller = around(require$$0.Workspace.prototype, {
       getActiveViewOfType: (next) => function(t) {
         const result = next.call(this, t);
@@ -4228,6 +4230,13 @@ class DailyNoteViewPlugin extends require$$0.Plugin {
           if (e.view.editMode) {
             this.activeEditor = e.view;
             e.parentLeaf.view.editMode = e.view;
+            const activeFile = e.view.file ?? null;
+            const activePath = (activeFile == null ? void 0 : activeFile.path) ?? null;
+            if (activePath !== lastActiveFilePath) {
+              lastActiveFilePath = activePath;
+              this.trigger("active-leaf-change", e);
+              this.trigger("file-open", activeFile);
+            }
           }
           return;
         }
