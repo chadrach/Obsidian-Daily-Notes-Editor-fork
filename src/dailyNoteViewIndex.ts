@@ -116,10 +116,19 @@ export default class DailyNoteViewPlugin extends Plugin {
     async openDailyNoteEditor() {
         const workspace = this.app.workspace;
 
+        // Optionally create today's daily note before opening the editor
+        if (this.settings.createOnOpen) {
+            await this.ensureTodaysDailyNoteExists();
+        }
+
         if (this.settings.switchToExisting) {
             const leaves = workspace.getLeavesOfType(DAILY_NOTE_VIEW_TYPE);
             if (leaves.length > 0) {
                 workspace.revealLeaf(leaves[0]);
+                // Focus today's note in the existing editor when auto focus is on
+                if (this.settings.autoFocus) {
+                    (leaves[0].view as DailyNoteView).focusTodayNote();
+                }
                 return;
             }
         }

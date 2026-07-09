@@ -197,6 +197,16 @@ export class DailyNoteView extends ItemView {
         this.plugin.openDailyNoteEditor();
     }
 
+    /**
+     * Focus today's daily note in this view and move the cursor to the end.
+     * Used when switching to an already-open editor.
+     */
+    public focusTodayNote(): void {
+        if (this.view) {
+            this.view.focusTodayNote();
+        }
+    }
+
     async onOpen(): Promise<void> {
         this.scope.register(["Mod"], "f", (e) => {
             // do-nothing

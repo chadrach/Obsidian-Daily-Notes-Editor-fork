@@ -6,6 +6,7 @@ export interface DailyNoteSettings {
     hideBacklinks: boolean;
     hideUnreachedDates: boolean;
     createAndOpenOnStartup: boolean;
+    createOnOpen: boolean;
     useArrowUpOrDownToNavigate: boolean;
     autoFocus: boolean;
     switchToExisting: boolean;
@@ -21,6 +22,7 @@ export const DEFAULT_SETTINGS: DailyNoteSettings = {
     hideBacklinks: false,
     hideUnreachedDates: false,
     createAndOpenOnStartup: false,
+    createOnOpen: false,
     useArrowUpOrDownToNavigate: false,
     autoFocus: false,
     switchToExisting: false,
@@ -109,6 +111,20 @@ export class DailyNoteSettingTab extends PluginSettingTab {
                     .setValue(settings.createAndOpenOnStartup)
                     .onChange(async (value) => {
                         this.plugin.settings.createAndOpenOnStartup = value;
+                        this.applySettingsUpdate();
+                    })
+            );
+
+        new Setting(containerEl)
+            .setName("Create daily note when opening editor")
+            .setDesc(
+                "When you run the Open Daily Notes Editor command, create today's daily note if it doesn't exist yet. When 'Auto focus today's note' is also enabled, the cursor jumps to the end of that note."
+            )
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(settings.createOnOpen)
+                    .onChange(async (value) => {
+                        this.plugin.settings.createOnOpen = value;
                         this.applySettingsUpdate();
                     })
             );

@@ -2,10 +2,11 @@
     import type DailyNoteViewPlugin from "../dailyNoteViewIndex";
     import type { WorkspaceLeaf } from "obsidian";
 
-    import { TFile, moment } from "obsidian";
-    import { getDateFromFile } from "obsidian-daily-notes-interface";
+    import { MarkdownView, TFile, moment } from "obsidian";
+    import { getAllDailyNotes, getDailyNote, getDateFromFile } from "obsidian-daily-notes-interface";
     import DailyNote from "./DailyNote.svelte";
     import { inview } from "svelte-inview";
+    import { isDailyNoteLeaf } from "../leafView";
     import { TimeRange, SelectionMode, TimeField } from "../types/time";
     import { onMount, onDestroy } from "svelte";
     import { FileManager, FileManagerOptions } from "../utils/fileManager";
@@ -213,6 +214,66 @@
         hasMore = filteredFiles.length > 0;
         firstLoaded = true;
         startFillViewport();
+    }
+
+    // Focus today's daily note and move the cursor to the end of the document.
+    // Used when re-opening/switching to an already-open editor, and after
+    // creating today's note on open, so it mirrors the on-render autoFocus.
+    export function focusTodayNote() {
+        if (selectionMode !== "daily") return;
+
+        // Pick up a daily note that may have just been created for today
+        const hadToday = fileManager.hasCurrentDayNote();
+        fileManager.checkDailyNote();
+        const hasToday = fileManager.hasCurrentDayNote();
+
+        // If a new today note appeared, rebuild the rendered list so it shows up
+        if (!hadToday && hasToday) {
+            renderedFiles = [];
+            visibleNotes.clear();
+            filteredFiles = fileManager.getFilteredFiles();
+            hasMore = filteredFiles.length > 0;
+            firstLoaded = true;
+            startFillViewport();
+        }
+
+        if (!hasToday) return;
+
+        const todayNote = getDailyNote(moment(), getAllDailyNotes()) as TFile | null;
+        if (!todayNote) return;
+
+        // Make sure today's note is marked visible so its editor renders
+        visibleNotes.add(todayNote.path);
+        visibleNotes = visibleNotes;
+
+        focusFileEditor(todayNote);
+    }
+
+    // Find the editor leaf showing the given file and focus it, moving the
+    // cursor to the end. Retries a few times because the editor leaf may still
+    // be spawning when the note was just made visible.
+    function focusFileEditor(file: TFile, attempts: number = 0) {
+        window.setTimeout(() => {
+            let targetLeaf: any = null;
+            plugin.app.workspace.iterateAllLeaves((l) => {
+                if (
+                    isDailyNoteLeaf(l) &&
+                    l.view instanceof MarkdownView &&
+                    l.view.file?.path === file.path
+                ) {
+                    targetLeaf = l;
+                }
+            });
+
+            if (targetLeaf && targetLeaf.view instanceof MarkdownView) {
+                const editor = targetLeaf.view.editor;
+                editor.focus();
+                editor.setCursor(editor.lineCount(), 0);
+                targetLeaf.view.containerEl.scrollIntoView?.({ block: "center" });
+            } else if (attempts < 10) {
+                focusFileEditor(file, attempts + 1);
+            }
+        }, 100);
     }
 
     export function tick() {
