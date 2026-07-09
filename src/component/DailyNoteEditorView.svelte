@@ -345,7 +345,6 @@
 
     // Handle note visibility change
     function handleNoteVisibilityChange(file: TFile, isVisible: boolean) {
-        console.log("inview", isVisible)
         if (isVisible) {
             visibleNotes.add(file.path);
         } else {

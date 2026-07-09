@@ -51,8 +51,6 @@
         }
     });
 
-    console.log(shouldRender, rendered)
-
     // Load editor when shouldRender becomes true; once loaded, never unload
     $: if (editorEl && shouldRender && !rendered) {
         showEditor();
@@ -76,10 +74,6 @@
         if (isDestroying) return;
 
         try {
-            // Use safe type checking before accessing basename
-            const fileName = file instanceof TFile ? file.basename : "unknown";
-            console.log(`Loading editor for ${fileName}`);
-
             [createdLeaf] = spawnLeafView(plugin, editorEl, leaf);
             createdLeaf.setPinned(true);
 

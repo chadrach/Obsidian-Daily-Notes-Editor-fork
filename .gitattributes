@@ -1,7 +1,0 @@
-# main.js is a generated, minified build artifact (output of `npm run build`).
-# It is committed so the plugin can be installed by copying this repo straight
-# into a vault, but its diffs are noise. These attributes keep it tracked while
-# hiding the churn:
-#   -diff                  suppress the textual diff in `git diff`/`git show`
-#   linguist-generated     collapse it in GitHub diffs and exclude from stats
-main.js -diff linguist-generated=true

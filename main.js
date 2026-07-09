@@ -1,1 +1,4236 @@
-"use strict";var Ae=Object.defineProperty;var Pe=(i,t,e)=>t in i?Ae(i,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):i[t]=e;var bt=(i,t,e)=>Pe(i,typeof t!="symbol"?t+"":t,e);const h=require("obsidian"),_e=require("@codemirror/view"),Be=require("@codemirror/state");function ft(i,t){const e=Object.keys(t).map(n=>Ie(i,n,t[n]));return e.length===1?e[0]:function(){e.forEach(n=>n())}}function Ie(i,t,e){const n=i[t],s=i.hasOwnProperty(t);let o=e(n);return n&&Object.setPrototypeOf(o,n),Object.setPrototypeOf(a,o),i[t]=a,l;function a(...c){return o===n&&i[t]===a&&l(),o.apply(this,c)}function l(){i[t]===a&&(s?i[t]=n:delete i[t]),o!==n&&(o=n,Object.setPrototypeOf(a,n||Function))}}function Ye(i){const t=[];for(let e=0;e<i;e++)t.push((16*Math.random()|0).toString(16));return t.join("")}const pt=new WeakMap;function et(i){return i.containerEl.matches(".dn-editor.dn-leaf-view .workspace-leaf")}function He(i){const t=function(){return Object.setPrototypeOf(new h.Component,new.target.prototype)};return t.prototype=i.prototype,Object.setPrototypeOf(t,i)}const Ve=(i,t,e,n)=>{let s=i.app.workspace.activeLeaf;s||(s=e),t||(t=s==null?void 0:s.containerEl);const o=new it(s,t,i,void 0,n);return[o.attachLeaf(),o]};class it extends He(h.HoverPopover){constructor(t,e,n,s,o){var l,c;super(),this.targetEl=e,this.plugin=n,this.onShowCallback=o,this.abortController=this.addChild(new h.Component),this.detaching=!1,this.opening=!1,this.rootSplit=new h.WorkspaceSplit(window.app.workspace,"vertical"),this.isPinned=!0,this.oldPopover=(l=this.parent)==null?void 0:l.DailyNoteEditor,this.id=Ye(8),s===void 0&&(s=300),this.onTarget=!0,this.parent=t,this.waitTime=s,this.state=h.PopoverState.Showing,this.document=((c=this.targetEl)==null?void 0:c.ownerDocument)??window.activeDocument??window.document,this.hoverEl=this.document.defaultView.createDiv({cls:"dn-editor dn-leaf-view",attr:{id:"dn-"+this.id}});const{hoverEl:a}=this;this.abortController.load(),this.timer=window.setTimeout(this.show.bind(this),s),this.setActive=this._setActive.bind(this),a&&a.addEventListener("mousedown",this.setActive),pt.set(this.hoverEl,this),this.hoverEl.addClass("dn-editor"),this.containerEl=this.hoverEl.createDiv("dn-content"),this.buildWindowControls(),this.setInitialDimensions()}static activeWindows(){const t=[window],{floatingSplit:e}=app.workspace;if(e)for(const n of e.children)n.win&&t.push(n.win);return t}static containerForDocument(t,e){if(e!==document&&t.app.workspace.floatingSplit){for(const n of t.app.workspace.floatingSplit.children)if(n.doc===e)return n}return t.app.workspace.rootSplit}static activePopovers(){return this.activeWindows().flatMap(this.popoversForWindow)}static popoversForWindow(t){var e;return Array.prototype.slice.call(((e=t==null?void 0:t.document)==null?void 0:e.body.querySelectorAll(".dn-leaf-view"))??[]).map(n=>pt.get(n)).filter(n=>n)}static forLeaf(t){const e=t&&document.body.matchParent.call(t.containerEl,".dn-leaf-view");return e?pt.get(e):void 0}static iteratePopoverLeaves(t,e){for(const n of this.activePopovers())if(n.rootSplit&&t.iterateLeaves(e,n.rootSplit))return!0;return!1}_setActive(t){t.preventDefault(),t.stopPropagation(),this.plugin.app.workspace.setActiveLeaf(this.leaves()[0],{focus:!0})}getDefaultMode(){return"source"}updateLeaves(){this.onTarget&&this.targetEl&&!this.document.contains(this.targetEl)&&(this.onTarget=!1,this.transition());let t=0;this.plugin.app.workspace.iterateLeaves(e=>{t++},this.rootSplit),t===0&&this.hide(),this.hoverEl.setAttribute("data-leaf-count",t.toString())}leaves(){const t=[];return this.plugin.app.workspace.iterateLeaves(e=>{t.push(e)},this.rootSplit),t}setInitialDimensions(){this.hoverEl.style.height="auto",this.hoverEl.style.width="100%"}transition(){this.shouldShow()?this.state===h.PopoverState.Hiding&&(this.state=h.PopoverState.Shown,window.clearTimeout(this.timer)):this.state===h.PopoverState.Showing?this.hide():this.state===h.PopoverState.Shown&&(this.state=h.PopoverState.Hiding,this.timer=window.setTimeout(()=>{this.shouldShow()?this.transition():this.hide()},this.waitTime))}buildWindowControls(){this.titleEl=this.document.defaultView.createDiv("popover-titlebar"),this.titleEl.createDiv("popover-title"),this.containerEl.prepend(this.titleEl)}attachLeaf(){this.rootSplit.getRoot=()=>this.plugin.app.workspace[this.document===document?"rootSplit":"floatingSplit"],this.rootSplit.getContainer=()=>it.containerForDocument(this.plugin,this.document),this.titleEl.insertAdjacentElement("afterend",this.rootSplit.containerEl);const t=this.plugin.app.workspace.createLeafInParent(this.rootSplit,0);return this.updateLeaves(),t}onload(){super.onload(),this.registerEvent(this.plugin.app.workspace.on("layout-change",this.updateLeaves,this)),this.registerEvent(this.plugin.app.workspace.on("layout-change",()=>{this.rootSplit.children.forEach((t,e)=>{t instanceof h.WorkspaceTabs&&this.rootSplit.replaceChild(e,t.children[0])})}))}onShow(){var o,a;setTimeout(()=>this.waitTime=600,600),(o=this.oldPopover)==null||o.hide(),this.oldPopover=null,this.hoverEl.toggleClass("is-new",!0),this.document.body.addEventListener("click",()=>{this.hoverEl.toggleClass("is-new",!1)},{once:!0,capture:!0}),this.parent&&(this.parent.DailyNoteEditor=this);const e=this.hoverEl.querySelector(".view-header");e==null||e.remove();const n=this.hoverEl.querySelector(".workspace-leaf");n&&this.hoverEl.appendChild(n);const s=this.hoverEl.querySelector(".inline-title");s&&s.remove(),(a=this.onShowCallback)==null||a.call(this),this.onShowCallback=void 0}detect(t){const{targetEl:e}=this;e&&(this.onTarget=t===e||e.contains(t))}shouldShow(){return this.shouldShowSelf()||this.shouldShowChild()}shouldShowChild(){return it.activePopovers().some(t=>t!==this&&t.targetEl&&this.hoverEl.contains(t.targetEl)?t.shouldShow():!1)}shouldShowSelf(){return!this.detaching&&!!(this.onTarget||this.state==h.PopoverState.Shown||this.document.querySelector(`body>.modal-container, body > #he${this.id} ~ .menu, body > #he${this.id} ~ .suggestion-container`))}show(){!this.targetEl||this.document.body.contains(this.targetEl)?(this.state=h.PopoverState.Shown,this.timer=0,this.targetEl.appendChild(this.hoverEl),this.onShow(),this.plugin.app.workspace.onLayoutChange(),this.load()):this.hide(),this.hoverEl.dataset.imgHeight&&this.hoverEl.dataset.imgWidth&&(this.hoverEl.style.height=parseFloat(this.hoverEl.dataset.imgHeight)+this.titleEl.offsetHeight+"px",this.hoverEl.style.width=parseFloat(this.hoverEl.dataset.imgWidth)+"px")}onHide(){var t;this.oldPopover=null,((t=this.parent)==null?void 0:t.DailyNoteEditor)===this&&(this.parent.DailyNoteEditor=null)}hide(){var e;if(this.onTarget=!1,this.detaching=!0,this.timer&&(window.clearTimeout(this.timer),this.timer=0),this.hoverEl.hide(),this.opening)return;const t=this.leaves();if(t.length)t[0].detach();else return this.parent=null,(e=this.abortController)==null||e.unload(),this.abortController=void 0,this.nativeHide()}nativeHide(){var n;const{hoverEl:t,targetEl:e}=this;if(this.state=h.PopoverState.Hidden,t.detach(),e){const s=e.matchParent(".dn-leaf-view");s&&((n=pt.get(s))==null||n.transition())}this.onHide(),this.unload()}resolveLink(t,e){const n=h.parseLinktext(t);return n?this.plugin.app.metadataCache.getFirstLinkpathDest(n.path,e):null}async openLink(t,e,n,s){var g,m,y;let o=this.resolveLink(t,e);const a=h.parseLinktext(t);if(!o&&s){const v=this.plugin.app.fileManager.getNewFileParent(e);o=await this.plugin.app.fileManager.createNewMarkdownFile(v,a.path)}if(!o)return;const{viewRegistry:l}=this.plugin.app,c=l.typeByExtension[o.extension];if(!c||!l.viewByType[c])return;n=Object.assign(this.buildEphemeralState(o,a),n);const r=this.getDefaultMode(),f=this.buildState(r,n),d=await this.openFile(o,f,s),u=(g=d==null?void 0:d.view)==null?void 0:g.getViewType();if(u==="image"){(m=this.parent)!=null&&m.hasOwnProperty("editorEl")&&this.parent.editorEl.hasClass("is-live-preview")&&(this.waitTime=3e3);const v=d.view.contentEl.querySelector("img");this.hoverEl.dataset.imgHeight=String(v.naturalHeight),this.hoverEl.dataset.imgWidth=String(v.naturalWidth),this.hoverEl.dataset.imgRatio=String(v.naturalWidth/v.naturalHeight)}else u==="pdf"&&(this.hoverEl.style.height="800px",this.hoverEl.style.width="600px");((y=f.state)==null?void 0:y.mode)==="source"&&this.whenShown(()=>{var v,b,w,x;h.requireApiVersion("1.0")&&((w=(b=(v=d==null?void 0:d.view)==null?void 0:v.editMode)==null?void 0:b.reinit)==null||w.call(b)),(x=d==null?void 0:d.view)==null||x.setEphemeralState(f.eState)})}whenShown(t){if(this.detaching)return;const e=this.onShowCallback;this.onShowCallback=()=>{this.detaching||(t(),typeof e=="function"&&e())},this.state===h.PopoverState.Shown&&(this.onShowCallback(),this.onShowCallback=void 0)}async openFile(t,e,n){if(this.detaching)return;const s=n??this.attachLeaf();this.opening=!0;try{await s.openFile(t,e)}catch(o){console.error(o)}finally{this.opening=!1,this.detaching&&this.hide()}return this.plugin.app.workspace.setActiveLeaf(s),s}buildState(t,e){return{active:!1,state:{mode:"source"},eState:e}}buildEphemeralState(t,e){const n=this.plugin.app.metadataCache.getFileCache(t),s=n?h.resolveSubpath(n,(e==null?void 0:e.subpath)||""):void 0,o={subpath:e==null?void 0:e.subpath};return s&&(o.line=s.start.line,o.startLoc=s.start,o.endLoc=s.end||void 0),o}}const We=()=>{h.addIcon("daily-note",'<svg width="103" height="134" viewBox="0 0 103 134" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M60.3446 21.848H22.5577C19.5764 21.848 17.1595 24.2648 17.1595 27.2462V65.0331C17.1595 68.0144 19.5764 70.4312 22.5577 70.4312H60.3446C63.3259 70.4312 65.7428 68.0144 65.7428 65.0331V27.2462C65.7428 24.2648 63.3259 21.848 60.3446 21.848Z" stroke="#5C1111" stroke-width="4.81618" stroke-linecap="round" stroke-linejoin="round"/><path d="M52.2476 16.4498V27.2461" stroke="#5C1111" stroke-width="4.81618" stroke-linecap="round" stroke-linejoin="round"/><path d="M30.655 16.4498V27.2461" stroke="#5C1111" stroke-width="4.81618" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.1595 38.0424H65.7428" stroke="#5C1111" stroke-width="4.81618" stroke-linecap="round" stroke-linejoin="round"/><path d="M33.3541 54.2366L38.7523 59.6348L49.5485 48.8385" stroke="#5C1111" stroke-width="4.81618" stroke-linecap="round" stroke-linejoin="round"/><g filter="url(#filter0_ddddd_104_2)"><path d="M12.181 103.617L9.21851 95.8213L27.9292 87.0896L66.754 71.4973L93.1049 88.8047L91.3898 103.617H12.181Z" fill="#AC4DD9" stroke="black" stroke-width="0.963236"/><path d="M12.181 103.617L9.21851 95.9771L27.9292 87.0895L32.6069 103.461L12.181 103.617Z" fill="#540D75" stroke="black" stroke-width="0.963236"/><path d="M9.0625 95.6652L25.7894 67.212L27.9291 87.0894L9.21842 95.977L9.0625 95.6652Z" fill="#470068" stroke="black" stroke-width="0.481618"/><path d="M27.9291 87.0896L25.9021 66.8197L67.5335 56.2169L66.5979 71.4973L27.9291 87.0896Z" fill="#732E94" stroke="black" stroke-width="0.963236"/><path d="M66.598 71.4971L67.9466 56.3527L93.1049 88.8045L66.598 71.4971Z" fill="#C279E4" stroke="black" stroke-width="0.481618"/><path d="M9.0625 95.6652L25.7462 66.8195L67.9465 56.0808L93.1049 88.8046L66.598 71.4972L27.9291 87.0895L9.21842 95.9771L9.0625 95.6652Z" stroke="black" stroke-width="0.963236"/><path d="M26.0579 103.617L27.9289 87.0895L32.7625 103.617H26.0579Z" fill="#61018E" stroke="black" stroke-width="0.963236"/></g><defs><filter id="filter0_ddddd_104_2" x="0.0874329" y="53.8502" width="101.958" height="79.8707" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_104_2"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="1.20405"/><feGaussianBlur stdDeviation="1.44485"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/><feBlend mode="normal" in2="effect1_dropShadow_104_2" result="effect2_dropShadow_104_2"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="5.2978"/><feGaussianBlur stdDeviation="2.6489"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0"/><feBlend mode="normal" in2="effect2_dropShadow_104_2" result="effect3_dropShadow_104_2"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="11.7996"/><feGaussianBlur stdDeviation="3.61213"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"/><feBlend mode="normal" in2="effect3_dropShadow_104_2" result="effect4_dropShadow_104_2"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="21.1912"/><feGaussianBlur stdDeviation="4.21416"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.01 0"/><feBlend mode="normal" in2="effect4_dropShadow_104_2" result="effect5_dropShadow_104_2"/><feBlend mode="normal" in="SourceGraphic" in2="effect5_dropShadow_104_2" result="shape"/></filter></defs></svg>')},je={hideFrontmatter:!1,hideBacklinks:!1,hideUnreachedDates:!1,createAndOpenOnStartup:!1,createOnOpen:!1,useArrowUpOrDownToNavigate:!1,autoFocus:!1,switchToExisting:!1,preset:[]};class Ue extends h.PluginSettingTab{constructor(t,e){super(t,e),this.debounceApplySettingsUpdate=h.debounce(async()=>{await this.plugin.saveSettings()},200,!0),this.debounceDisplay=h.debounce(async()=>{await this.display()},400,!0),this.plugin=e}applySettingsUpdate(){this.debounceApplySettingsUpdate()}async display(){await this.plugin.loadSettings();const{containerEl:t}=this,e=this.plugin.settings;t.toggleClass("daily-note-settings-container",!0),t.empty(),new h.Setting(t).setName("Hide frontmatter").setDesc("Hide frontmatter in daily notes").addToggle(s=>s.setValue(e.hideFrontmatter).onChange(async o=>{this.plugin.settings.hideFrontmatter=o,document.body.classList.toggle("daily-notes-hide-frontmatter",o),this.applySettingsUpdate()})),new h.Setting(t).setName("Hide backlinks").setDesc("Hide backlinks in daily notes").addToggle(s=>s.setValue(e.hideBacklinks).onChange(async o=>{this.plugin.settings.hideBacklinks=o,document.body.classList.toggle("daily-notes-hide-backlinks",o),this.applySettingsUpdate()})),new h.Setting(t).setName("Create and open Daily Notes Editor on startup").setDesc("Automatically create today's daily note and open the Daily Notes Editor when Obsidian starts").addToggle(s=>s.setValue(e.createAndOpenOnStartup).onChange(async o=>{this.plugin.settings.createAndOpenOnStartup=o,this.applySettingsUpdate()})),new h.Setting(t).setName("Create daily note when opening editor").setDesc("When you run the Open Daily Notes Editor command, create today's daily note if it doesn't exist yet. When 'Auto focus today's note' is also enabled, the cursor jumps to the end of that note.").addToggle(s=>s.setValue(e.createOnOpen).onChange(async o=>{this.plugin.settings.createOnOpen=o,this.applySettingsUpdate()})),new h.Setting(t).setName("Use arrow up/down key to navigate between notes").addToggle(s=>s.setValue(e.useArrowUpOrDownToNavigate).onChange(async o=>{this.plugin.settings.useArrowUpOrDownToNavigate=o,this.applySettingsUpdate()})),new h.Setting(t).setName("Hide future dates").setDesc("Hide the diary entries for dates that have not yet arrived.").addToggle(s=>s.setValue(e.hideUnreachedDates).onChange(async o=>{this.plugin.settings.hideUnreachedDates=o,await this.plugin.saveSettings()})),new h.Setting(t).setName("Auto focus today's note").setDesc("Automatically focus today's note and move the cursor to the end of the document").addToggle(s=>s.setValue(e.autoFocus).onChange(async o=>{this.plugin.settings.autoFocus=o,this.applySettingsUpdate()})),new h.Setting(t).setName("Switch to existing editor").setDesc("If an daily notes editor is already open, switch to it rather than open it on a new tab").addToggle(s=>s.setValue(e.switchToExisting).onChange(async o=>{this.plugin.settings.switchToExisting=o,this.applySettingsUpdate()})),new h.Setting(t).setName("Saved presets").setHeading();const n=t.createDiv("preset-container");e.preset.length===0?n.createEl("p",{text:"No presets saved yet. Select a folder or tag in the Daily Notes Editor to create a preset.",cls:"no-presets-message"}):e.preset.forEach((s,o)=>{new h.Setting(t).setName(s.type==="folder"?"Focus on Folder: ":"Focus on Tag: ").setDesc(s.target).addButton(a=>{a.setIcon("trash"),a.onClick(()=>{e.preset.splice(o,1),this.applySettingsUpdate(),this.debounceDisplay()})})}),new h.Setting(t).setName("Add new preset").setDesc("Add a new folder or tag preset").addButton(s=>{s.setButtonText("Add Preset").setCta().onClick(()=>{new qe(this.app,(a,l)=>{e.preset.findIndex(r=>r.type===a&&r.target===l)===-1&&(e.preset.push({type:a,target:l}),this.applySettingsUpdate(),this.debounceDisplay())}).open()})})}}class qe extends h.Modal{constructor(t,e){super(t),this.type="folder",this.saveCallback=e}onOpen(){const{contentEl:t}=this;t.empty(),t.createEl("h2",{text:"Add New Preset"});const e=t.createEl("form");e.addEventListener("submit",u=>{u.preventDefault(),this.save()});const n=e.createDiv();n.addClass("setting-item");const s=n.createDiv();s.addClass("setting-item-info"),s.createEl("div",{text:"Preset Type",cls:"setting-item-name"});const o=n.createDiv();o.addClass("setting-item-control");const a=o.createEl("input",{type:"radio",attr:{name:"preset-type",id:"preset-type-folder",value:"folder",checked:!0}});o.createEl("label",{text:"Folder",attr:{for:"preset-type-folder"}});const l=o.createEl("input",{type:"radio",attr:{name:"preset-type",id:"preset-type-tag",value:"tag"}});o.createEl("label",{text:"Tag",attr:{for:"preset-type-tag"}}),a.addEventListener("change",()=>{a.checked&&(this.type="folder")}),l.addEventListener("change",()=>{l.checked&&(this.type="tag")});const c=e.createDiv();c.addClass("setting-item");const r=c.createDiv();r.addClass("setting-item-info"),r.createEl("div",{text:"Target",cls:"setting-item-name"}),r.createEl("div",{text:"Enter the folder path or tag name",cls:"setting-item-description"});const f=c.createDiv();f.addClass("setting-item-control"),this.targetInput=f.createEl("input",{type:"text",value:"",placeholder:"Enter folder path or tag name"}),this.targetInput.addClass("target-input");const d=t.createDiv();d.addClass("modal-button-container"),d.createEl("button",{text:"Cancel",cls:"mod-warning",attr:{type:"button"}}).addEventListener("click",()=>{this.close()}),d.createEl("button",{text:"Save",cls:"mod-cta",attr:{type:"submit"}}).addEventListener("click",u=>{u.preventDefault(),this.save()})}save(){const t=this.targetInput.value.trim();t&&(this.saveCallback(this.type,t),this.close())}onClose(){const{contentEl:t}=this;t.empty()}}var D={};Object.defineProperty(D,"__esModule",{value:!0});var N=h;const Ct="YYYY-MM-DD",St="gggg-[W]ww",te="YYYY-MM",ee="YYYY-[Q]Q",ie="YYYY";function ot(i){var e,n;const t=window.app.plugins.getPlugin("periodic-notes");return t&&((n=(e=t.settings)==null?void 0:e[i])==null?void 0:n.enabled)}function at(){var i,t,e,n;try{const{internalPlugins:s,plugins:o}=window.app;if(ot("daily")){const{format:r,folder:f,template:d}=((t=(i=o.getPlugin("periodic-notes"))==null?void 0:i.settings)==null?void 0:t.daily)||{};return{format:r||Ct,folder:(f==null?void 0:f.trim())||"",template:(d==null?void 0:d.trim())||""}}const{folder:a,format:l,template:c}=((n=(e=s.getPluginById("daily-notes"))==null?void 0:e.instance)==null?void 0:n.options)||{};return{format:l||Ct,folder:(a==null?void 0:a.trim())||"",template:(c==null?void 0:c.trim())||""}}catch{}}function rt(){var i,t,e,n,s,o,a;try{const l=window.app.plugins,c=(i=l.getPlugin("calendar"))==null?void 0:i.options,r=(e=(t=l.getPlugin("periodic-notes"))==null?void 0:t.settings)==null?void 0:e.weekly;if(ot("weekly"))return{format:r.format||St,folder:((n=r.folder)==null?void 0:n.trim())||"",template:((s=r.template)==null?void 0:s.trim())||""};const f=c||{};return{format:f.weeklyNoteFormat||St,folder:((o=f.weeklyNoteFolder)==null?void 0:o.trim())||"",template:((a=f.weeklyNoteTemplate)==null?void 0:a.trim())||""}}catch{}}function lt(){var t,e,n,s;const i=window.app.plugins;try{const o=ot("monthly")&&((e=(t=i.getPlugin("periodic-notes"))==null?void 0:t.settings)==null?void 0:e.monthly)||{};return{format:o.format||te,folder:((n=o.folder)==null?void 0:n.trim())||"",template:((s=o.template)==null?void 0:s.trim())||""}}catch{}}function ct(){var t,e,n,s;const i=window.app.plugins;try{const o=ot("quarterly")&&((e=(t=i.getPlugin("periodic-notes"))==null?void 0:t.settings)==null?void 0:e.quarterly)||{};return{format:o.format||ee,folder:((n=o.folder)==null?void 0:n.trim())||"",template:((s=o.template)==null?void 0:s.trim())||""}}catch{}}function dt(){var t,e,n,s;const i=window.app.plugins;try{const o=ot("yearly")&&((e=(t=i.getPlugin("periodic-notes"))==null?void 0:t.settings)==null?void 0:e.yearly)||{};return{format:o.format||ie,folder:((n=o.folder)==null?void 0:n.trim())||"",template:((s=o.template)==null?void 0:s.trim())||""}}catch{}}function ne(...i){let t=[];for(let n=0,s=i.length;n<s;n++)t=t.concat(i[n].split("/"));const e=[];for(let n=0,s=t.length;n<s;n++){const o=t[n];!o||o==="."||e.push(o)}return t[0]===""&&e.unshift(""),e.join("/")}function ze(i){let t=i.substring(i.lastIndexOf("/")+1);return t.lastIndexOf(".")!=-1&&(t=t.substring(0,t.lastIndexOf("."))),t}async function Qe(i){const t=i.replace(/\\/g,"/").split("/");if(t.pop(),t.length){const e=ne(...t);window.app.vault.getAbstractFileByPath(e)||await window.app.vault.createFolder(e)}}async function ht(i,t){t.endsWith(".md")||(t+=".md");const e=N.normalizePath(ne(i,t));return await Qe(e),e}async function K(i){const{metadataCache:t,vault:e}=window.app,n=N.normalizePath(i);if(n==="/")return Promise.resolve(["",null]);try{const s=t.getFirstLinkpathDest(n,""),o=await e.cachedRead(s),a=window.app.foldManager.load(s);return[o,a]}catch(s){return console.error(`Failed to read the daily note template '${n}'`,s),new N.Notice("Failed to read the daily note template"),["",null]}}function A(i,t="day"){const e=i.clone().startOf(t).format();return`${t}-${e}`}function se(i){return i.replace(/\[[^\]]*\]/g,"")}function Ze(i,t){if(t==="week"){const e=se(i);return/w{1,2}/i.test(e)&&(/M{1,4}/.test(e)||/D{1,4}/.test(e))}return!1}function J(i,t){return oe(i.basename,t)}function Ge(i,t){return oe(ze(i),t)}function oe(i,t){const n={day:at,week:rt,month:lt,quarter:ct,year:dt}[t]().format.split("/").pop(),s=window.moment(i,n,!0);if(!s.isValid())return null;if(Ze(n,t)&&t==="week"){const o=se(n);if(/w{1,2}/i.test(o))return window.moment(i,n.replace(/M{1,4}/g,"").replace(/D{1,4}/g,""),!1)}return s}class Ke extends Error{}async function ae(i){const t=window.app,{vault:e}=t,n=window.moment,{template:s,format:o,folder:a}=at(),[l,c]=await K(s),r=i.format(o),f=await ht(a,r);try{const d=await e.create(f,l.replace(/{{\s*date\s*}}/gi,r).replace(/{{\s*time\s*}}/gi,n().format("HH:mm")).replace(/{{\s*title\s*}}/gi,r).replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,(u,g,m,y,v,b)=>{const w=n(),x=i.clone().set({hour:w.get("hour"),minute:w.get("minute"),second:w.get("second")});return m&&x.add(parseInt(y,10),v),b?x.format(b.substring(1).trim()):x.format(o)}).replace(/{{\s*yesterday\s*}}/gi,i.clone().subtract(1,"day").format(o)).replace(/{{\s*tomorrow\s*}}/gi,i.clone().add(1,"d").format(o)));return t.foldManager.save(d,c),d}catch(d){console.error(`Failed to create file: '${f}'`,d),new N.Notice("Unable to create new file.")}}function Je(i,t){return t[A(i,"day")]??null}function Xe(){const{vault:i}=window.app,{folder:t}=at(),e=i.getAbstractFileByPath(N.normalizePath(t));if(!e)throw new Ke("Failed to find daily notes folder");const n={};return N.Vault.recurseChildren(e,s=>{if(s instanceof N.TFile){const o=J(s,"day");if(o){const a=A(o,"day");n[a]=s}}}),n}class ti extends Error{}function ei(){const{moment:i}=window;let t=i.localeData()._week.dow;const e=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];for(;t;)e.push(e.shift()),t--;return e}function ii(i){return ei().indexOf(i.toLowerCase())}async function re(i){const{vault:t}=window.app,{template:e,format:n,folder:s}=rt(),[o,a]=await K(e),l=i.format(n),c=await ht(s,l);try{const r=await t.create(c,o.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,(f,d,u,g,m,y)=>{const v=window.moment(),b=i.clone().set({hour:v.get("hour"),minute:v.get("minute"),second:v.get("second")});return u&&b.add(parseInt(g,10),m),y?b.format(y.substring(1).trim()):b.format(n)}).replace(/{{\s*title\s*}}/gi,l).replace(/{{\s*time\s*}}/gi,window.moment().format("HH:mm")).replace(/{{\s*(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\s*:(.*?)}}/gi,(f,d,u)=>{const g=ii(d);return i.weekday(g).format(u.trim())}));return window.app.foldManager.save(r,a),r}catch(r){console.error(`Failed to create file: '${c}'`,r),new N.Notice("Unable to create new file.")}}function ni(i,t){return t[A(i,"week")]??null}function si(){const i={};if(!ce())return i;const{vault:t}=window.app,{folder:e}=rt(),n=t.getAbstractFileByPath(N.normalizePath(e));if(!n)throw new ti("Failed to find weekly notes folder");return N.Vault.recurseChildren(n,s=>{if(s instanceof N.TFile){const o=J(s,"week");if(o){const a=A(o,"week");i[a]=s}}}),i}class oi extends Error{}async function le(i){const{vault:t}=window.app,{template:e,format:n,folder:s}=lt(),[o,a]=await K(e),l=i.format(n),c=await ht(s,l);try{const r=await t.create(c,o.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,(f,d,u,g,m,y)=>{const v=window.moment(),b=i.clone().set({hour:v.get("hour"),minute:v.get("minute"),second:v.get("second")});return u&&b.add(parseInt(g,10),m),y?b.format(y.substring(1).trim()):b.format(n)}).replace(/{{\s*date\s*}}/gi,l).replace(/{{\s*time\s*}}/gi,window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi,l));return window.app.foldManager.save(r,a),r}catch(r){console.error(`Failed to create file: '${c}'`,r),new N.Notice("Unable to create new file.")}}function ai(i,t){return t[A(i,"month")]??null}function ri(){const i={};if(!de())return i;const{vault:t}=window.app,{folder:e}=lt(),n=t.getAbstractFileByPath(N.normalizePath(e));if(!n)throw new oi("Failed to find monthly notes folder");return N.Vault.recurseChildren(n,s=>{if(s instanceof N.TFile){const o=J(s,"month");if(o){const a=A(o,"month");i[a]=s}}}),i}class li extends Error{}async function ci(i){const{vault:t}=window.app,{template:e,format:n,folder:s}=ct(),[o,a]=await K(e),l=i.format(n),c=await ht(s,l);try{const r=await t.create(c,o.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,(f,d,u,g,m,y)=>{const v=window.moment(),b=i.clone().set({hour:v.get("hour"),minute:v.get("minute"),second:v.get("second")});return u&&b.add(parseInt(g,10),m),y?b.format(y.substring(1).trim()):b.format(n)}).replace(/{{\s*date\s*}}/gi,l).replace(/{{\s*time\s*}}/gi,window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi,l));return window.app.foldManager.save(r,a),r}catch(r){console.error(`Failed to create file: '${c}'`,r),new N.Notice("Unable to create new file.")}}function di(i,t){return t[A(i,"quarter")]??null}function hi(){const i={};if(!he())return i;const{vault:t}=window.app,{folder:e}=ct(),n=t.getAbstractFileByPath(N.normalizePath(e));if(!n)throw new li("Failed to find quarterly notes folder");return N.Vault.recurseChildren(n,s=>{if(s instanceof N.TFile){const o=J(s,"quarter");if(o){const a=A(o,"quarter");i[a]=s}}}),i}class ui extends Error{}async function fi(i){const{vault:t}=window.app,{template:e,format:n,folder:s}=dt(),[o,a]=await K(e),l=i.format(n),c=await ht(s,l);try{const r=await t.create(c,o.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,(f,d,u,g,m,y)=>{const v=window.moment(),b=i.clone().set({hour:v.get("hour"),minute:v.get("minute"),second:v.get("second")});return u&&b.add(parseInt(g,10),m),y?b.format(y.substring(1).trim()):b.format(n)}).replace(/{{\s*date\s*}}/gi,l).replace(/{{\s*time\s*}}/gi,window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi,l));return window.app.foldManager.save(r,a),r}catch(r){console.error(`Failed to create file: '${c}'`,r),new N.Notice("Unable to create new file.")}}function pi(i,t){return t[A(i,"year")]??null}function gi(){const i={};if(!ue())return i;const{vault:t}=window.app,{folder:e}=dt(),n=t.getAbstractFileByPath(N.normalizePath(e));if(!n)throw new ui("Failed to find yearly notes folder");return N.Vault.recurseChildren(n,s=>{if(s instanceof N.TFile){const o=J(s,"year");if(o){const a=A(o,"year");i[a]=s}}}),i}function mi(){var n,s;const{app:i}=window,t=i.internalPlugins.plugins["daily-notes"];if(t&&t.enabled)return!0;const e=i.plugins.getPlugin("periodic-notes");return e&&((s=(n=e.settings)==null?void 0:n.daily)==null?void 0:s.enabled)}function ce(){var e,n;const{app:i}=window;if(i.plugins.getPlugin("calendar"))return!0;const t=i.plugins.getPlugin("periodic-notes");return t&&((n=(e=t.settings)==null?void 0:e.weekly)==null?void 0:n.enabled)}function de(){var e,n;const{app:i}=window,t=i.plugins.getPlugin("periodic-notes");return t&&((n=(e=t.settings)==null?void 0:e.monthly)==null?void 0:n.enabled)}function he(){var e,n;const{app:i}=window,t=i.plugins.getPlugin("periodic-notes");return t&&((n=(e=t.settings)==null?void 0:e.quarterly)==null?void 0:n.enabled)}function ue(){var e,n;const{app:i}=window,t=i.plugins.getPlugin("periodic-notes");return t&&((n=(e=t.settings)==null?void 0:e.yearly)==null?void 0:n.enabled)}function wi(i){const t={day:at,week:rt,month:lt,quarter:ct,year:dt}[i];return t()}function yi(i,t){return{day:ae,month:le,week:re}[i](t)}var Tt=D.DEFAULT_DAILY_NOTE_FORMAT=Ct;D.DEFAULT_MONTHLY_NOTE_FORMAT=te;D.DEFAULT_QUARTERLY_NOTE_FORMAT=ee;D.DEFAULT_WEEKLY_NOTE_FORMAT=St;D.DEFAULT_YEARLY_NOTE_FORMAT=ie;D.appHasDailyNotesPluginLoaded=mi;D.appHasMonthlyNotesPluginLoaded=de;D.appHasQuarterlyNotesPluginLoaded=he;D.appHasWeeklyNotesPluginLoaded=ce;D.appHasYearlyNotesPluginLoaded=ue;var fe=D.createDailyNote=ae;D.createMonthlyNote=le;D.createPeriodicNote=yi;D.createQuarterlyNote=ci;D.createWeeklyNote=re;D.createYearlyNote=fi;var vt=D.getAllDailyNotes=Xe;D.getAllMonthlyNotes=ri;D.getAllQuarterlyNotes=hi;D.getAllWeeklyNotes=si;D.getAllYearlyNotes=gi;var $t=D.getDailyNote=Je,Mt=D.getDailyNoteSettings=at,Nt=D.getDateFromFile=J;D.getDateFromPath=Ge;D.getDateUID=A;D.getMonthlyNote=ai;D.getMonthlyNoteSettings=lt;D.getPeriodicNoteSettings=wi;D.getQuarterlyNote=di;D.getQuarterlyNoteSettings=ct;D.getTemplateInfo=K;D.getWeeklyNote=ni;D.getWeeklyNoteSettings=rt;D.getYearlyNote=pi;D.getYearlyNoteSettings=dt;function vi(i){if(!i)return null;const t=i.view;return t instanceof h.MarkdownView?t.editor:null}function Fi(i,t,e){if(!t||!et(t))return null;const n=[];i.workspace.iterateAllLeaves(a=>{et(a)&&n.push(a)}),n.sort((a,l)=>{const c=a.containerEl.getBoundingClientRect(),r=l.containerEl.getBoundingClientRect();return c.top-r.top});const s=n.findIndex(a=>a===t);if(s===-1)return null;const o=e==="up"?s-1:s+1;return o>=0&&o<n.length?n[o]:null}function Bt(i,t,e){const n=Fi(i,t,e);if(!n)return!1;i.workspace.setActiveLeaf(n,{focus:!0});const s=vi(n);if(!s)return!1;let o;if(e==="up"){const a=s.lastLine(),l=s.getLine(a).length;o={line:a,ch:l}}else o={line:0,ch:0};return s.setCursor(o),s.scrollIntoView({from:o,to:o},!0),setTimeout(()=>{n.view instanceof h.MarkdownView&&(n.view.editMode&&n.view.editMode.editor?n.view.editMode.editor.focus():s.focus())},10),!0}function ki(i){var t;return((t=i.settings)==null?void 0:t.hideFrontmatter)===!0}function bi(i,t,e,n){var c,r;if(!ki(n)){const f=i.state.selection.main.head,d=i.state.doc.lineAt(f);return d.number===1&&f===d.from}const s=i.state.selection.main.head,o=i.state.doc.lineAt(s),a=e.metadataCache.getFileCache(t);if(!a||!a.frontmatter)return o.number===1&&s===o.from;const l=(((r=(c=a.frontmatterPosition)==null?void 0:c.end)==null?void 0:r.line)??0)+2;return o.number===l&&s===o.from}function Ei(i){const{app:t,plugin:e}=i,n=[{key:"ArrowUp",run:s=>{var c;if(!s.state)return!1;const o=s.state.field(h.editorInfoField),a=o==null?void 0:o.leaf,l=(c=a==null?void 0:a.view)==null?void 0:c.file;return!!(l&&bi(s,l,t,e)&&a&&Bt(t,a,"up"))}},{key:"ArrowDown",run:s=>{if(!s.state)return!1;const o=s.state.selection.main.head,a=s.state.doc.lineAt(o),l=s.state.field(h.editorInfoField),c=l==null?void 0:l.leaf,r=s.state.doc.lines;return!!(a.number===r&&o===a.to&&c&&Bt(t,c,"down"))}}];return Be.Prec.highest(_e.keymap.of(n))}function U(){}function pe(i){return i()}function It(){return Object.create(null)}function B(i){i.forEach(pe)}function ut(i){return typeof i=="function"}function ge(i,t){return i!=i?t==t:i!==t||i&&typeof i=="object"||typeof i=="function"}function Di(i){return Object.keys(i).length===0}function me(i){return i&&ut(i.destroy)?i.destroy:U}function R(i,t){i.appendChild(t)}function I(i,t,e){i.insertBefore(t,e||null)}function P(i){i.parentNode&&i.parentNode.removeChild(i)}function $(i){return document.createElement(i)}function Yt(i){return document.createElementNS("http://www.w3.org/2000/svg",i)}function we(i){return document.createTextNode(i)}function W(){return we(" ")}function V(i,t,e,n){return i.addEventListener(t,e,n),()=>i.removeEventListener(t,e,n)}function k(i,t,e){e==null?i.removeAttribute(t):i.getAttribute(t)!==e&&i.setAttribute(t,e)}function Ci(i){return Array.from(i.childNodes)}function Si(i,t){t=""+t,i.data!==t&&(i.data=t)}let nt;function tt(i){nt=i}function ye(){if(!nt)throw new Error("Function called outside component initialization");return nt}function ve(i){ye().$$.on_mount.push(i)}function Fe(i){ye().$$.on_destroy.push(i)}const Z=[],st=[];let G=[];const Ht=[],Ti=Promise.resolve();let xt=!1;function Mi(){xt||(xt=!0,Ti.then(ke))}function Lt(i){G.push(i)}const Et=new Set;let Q=0;function ke(){if(Q!==0)return;const i=nt;do{try{for(;Q<Z.length;){const t=Z[Q];Q++,tt(t),Ni(t.$$)}}catch(t){throw Z.length=0,Q=0,t}for(tt(null),Z.length=0,Q=0;st.length;)st.pop()();for(let t=0;t<G.length;t+=1){const e=G[t];Et.has(e)||(Et.add(e),e())}G.length=0}while(Z.length);for(;Ht.length;)Ht.pop()();xt=!1,Et.clear(),tt(i)}function Ni(i){if(i.fragment!==null){i.update(),B(i.before_update);const t=i.dirty;i.dirty=[-1],i.fragment&&i.fragment.p(i.ctx,t),i.after_update.forEach(Lt)}}function xi(i){const t=[],e=[];G.forEach(n=>i.indexOf(n)===-1?t.push(n):e.push(n)),e.forEach(n=>n()),G=t}const wt=new Set;let j;function Li(){j={r:0,c:[],p:j}}function Ri(){j.r||B(j.c),j=j.p}function Ft(i,t){i&&i.i&&(wt.delete(i),i.i(t))}function Ot(i,t,e,n){if(i&&i.o){if(wt.has(i))return;wt.add(i),j.c.push(()=>{wt.delete(i),n&&(e&&i.d(1),n())}),i.o(t)}else n&&n()}function Vt(i){return(i==null?void 0:i.length)!==void 0?i:Array.from(i)}function $i(i,t){Ot(i,1,1,()=>{t.delete(i.key)})}function Oi(i,t,e,n,s,o,a,l,c,r,f,d){let u=i.length,g=o.length,m=u;const y={};for(;m--;)y[i[m].key]=m;const v=[],b=new Map,w=new Map,x=[];for(m=g;m--;){const S=d(s,o,m),M=e(S);let O=a.get(M);O?x.push(()=>O.p(S,t)):(O=r(M,S),O.c()),b.set(M,v[m]=O),M in y&&w.set(M,Math.abs(m-y[M]))}const E=new Set,C=new Set;function F(S){Ft(S,1),S.m(l,f),a.set(S.key,S),f=S.first,g--}for(;u&&g;){const S=v[g-1],M=i[u-1],O=S.key,q=M.key;S===M?(f=S.first,u--,g--):b.has(q)?!a.has(O)||E.has(O)?F(S):C.has(q)?u--:w.get(O)>w.get(q)?(C.add(O),F(S)):(E.add(q),u--):(c(M,a),u--)}for(;u--;){const S=i[u];b.has(S.key)||c(S,a)}for(;g;)F(v[g-1]);return B(x),v}function Ai(i){i&&i.c()}function be(i,t,e){const{fragment:n,after_update:s}=i.$$;n&&n.m(t,e),Lt(()=>{const o=i.$$.on_mount.map(pe).filter(ut);i.$$.on_destroy?i.$$.on_destroy.push(...o):B(o),i.$$.on_mount=[]}),s.forEach(Lt)}function Ee(i,t){const e=i.$$;e.fragment!==null&&(xi(e.after_update),B(e.on_destroy),e.fragment&&e.fragment.d(t),e.on_destroy=e.fragment=null,e.ctx=[])}function Pi(i,t){i.$$.dirty[0]===-1&&(Z.push(i),Mi(),i.$$.dirty.fill(0)),i.$$.dirty[t/31|0]|=1<<t%31}function De(i,t,e,n,s,o,a=null,l=[-1]){const c=nt;tt(i);const r=i.$$={fragment:null,ctx:[],props:o,update:U,not_equal:s,bound:It(),on_mount:[],on_destroy:[],on_disconnect:[],before_update:[],after_update:[],context:new Map(t.context||(c?c.$$.context:[])),callbacks:It(),dirty:l,skip_bound:!1,root:t.target||c.$$.root};a&&a(r.root);let f=!1;if(r.ctx=e?e(i,t.props||{},(d,u,...g)=>{const m=g.length?g[0]:u;return r.ctx&&s(r.ctx[d],r.ctx[d]=m)&&(!r.skip_bound&&r.bound[d]&&r.bound[d](m),f&&Pi(i,d)),u}):[],r.update(),f=!0,B(r.before_update),r.fragment=n?n(r.ctx):!1,t.target){if(t.hydrate){const d=Ci(t.target);r.fragment&&r.fragment.l(d),d.forEach(P)}else r.fragment&&r.fragment.c();t.intro&&Ft(i.$$.fragment),be(i,t.target,t.anchor),ke()}tt(c)}class Ce{constructor(){bt(this,"$$");bt(this,"$$set")}$destroy(){Ee(this,1),this.$destroy=U}$on(t,e){if(!ut(e))return U;const n=this.$$.callbacks[t]||(this.$$.callbacks[t]=[]);return n.push(e),()=>{const s=n.indexOf(e);s!==-1&&n.splice(s,1)}}$set(t){this.$$set&&!Di(t)&&(this.$$.skip_bound=!0,this.$$set(t),this.$$.skip_bound=!1)}}const _i="4";typeof window<"u"&&(window.__svelte||(window.__svelte={v:new Set})).v.add(_i);function Bi(i,t,e,n){function s(o){return o instanceof e?o:new e(function(a){a(o)})}return new(e||(e=Promise))(function(o,a){function l(f){try{r(n.next(f))}catch(d){a(d)}}function c(f){try{r(n.throw(f))}catch(d){a(d)}}function r(f){f.done?o(f.value):s(f.value).then(l,c)}r((n=n.apply(i,[])).next())})}function Wt(i){let t,e,n,s,o,a,l,c,r,f;return{c(){t=$("div"),e=$("span"),n=Yt("svg"),s=Yt("path"),a=W(),l=$("span"),c=we(i[5]),k(s,"d","m6 9 6 6 6-6"),k(n,"xmlns","http://www.w3.org/2000/svg"),k(n,"width","24"),k(n,"height","24"),k(n,"viewBox","0 0 24 24"),k(n,"fill","none"),k(n,"stroke","currentColor"),k(n,"stroke-width","2"),k(n,"stroke-linecap","round"),k(n,"stroke-linejoin","round"),k(n,"class","lucide lucide-chevron-down"),k(e,"role","button"),k(e,"data-collapsed",i[7]),k(e,"class","collapse-button svelte-1cwbjlj"),k(e,"title",o=i[7]?"Expand":"Collapse"),k(l,"role","link"),k(l,"class","clickable-link svelte-1cwbjlj"),k(l,"data-title",i[5]),k(t,"class","daily-note-title inline-title svelte-1cwbjlj")},m(d,u){I(d,t,u),R(t,e),R(e,n),R(n,s),R(t,a),R(t,l),R(l,c),r||(f=[V(e,"click",i[10]),V(l,"click",i[8])],r=!0)},p(d,u){u&128&&k(e,"data-collapsed",d[7]),u&128&&o!==(o=d[7]?"Expand":"Collapse")&&k(e,"title",o),u&32&&Si(c,d[5]),u&32&&k(l,"data-title",d[5])},d(d){d&&P(t),r=!1,B(f)}}}function jt(i){let t;return{c(){t=$("div"),t.textContent="Loading...",k(t,"class","editor-placeholder svelte-1cwbjlj")},m(e,n){I(e,t,n)},d(e){e&&P(t)}}}function Ut(i){let t;return{c(){t=$("div"),t.textContent="Scroll to view content",k(t,"class","editor-placeholder svelte-1cwbjlj")},m(e,n){I(e,t,n)},d(e){e&&P(t)}}}function Ii(i){let t,e,n,s,o,a,l,c,r=i[5]&&Wt(i),f=!i[3]&&i[1]&&jt(),d=!i[1]&&!i[3]&&Ut();return{c(){t=$("div"),e=$("div"),r&&r.c(),n=W(),s=$("div"),f&&f.c(),o=W(),d&&d.c(),k(s,"class","daily-note-editor svelte-1cwbjlj"),k(s,"data-collapsed",i[7]),k(s,"aria-hidden","true"),k(s,"data-title",i[6]),k(e,"class","daily-note svelte-1cwbjlj"),k(t,"class","daily-note-container"),k(t,"data-id",a="dn-editor-"+i[0].path)},m(u,g){I(u,t,g),R(t,e),r&&r.m(e,null),R(e,n),R(e,s),f&&f.m(s,null),R(s,o),d&&d.m(s,null),i[14](s),i[15](t),l||(c=V(s,"click",i[9]),l=!0)},p(u,[g]){u[5]?r?r.p(u,g):(r=Wt(u),r.c(),r.m(e,n)):r&&(r.d(1),r=null),!u[3]&&u[1]?f||(f=jt(),f.c(),f.m(s,o)):f&&(f.d(1),f=null),!u[1]&&!u[3]?d||(d=Ut(),d.c(),d.m(s,null)):d&&(d.d(1),d=null),g&128&&k(s,"data-collapsed",u[7]),g&64&&k(s,"data-title",u[6]),g&1&&a!==(a="dn-editor-"+u[0].path)&&k(t,"data-id",a)},i:U,o:U,d(u){u&&P(t),r&&r.d(),f&&f.d(),d&&d.d(),i[14](null),i[15](null),l=!1,c()}}}function Yi(i,t){const e=i.metadataCache.resolvedLinks;for(const n in e)if(n!==t.path&&t.path in e[n])return!0;return!1}function Hi(i,t,e){let{file:n}=t,{plugin:s}=t,{leaf:o}=t,{shouldRender:a=!0}=t,{autoFocus:l=!1}=t,c,r,f,d,u=!1,g,m=!1,y=!1;ve(()=>{if(n instanceof h.TFile){const F=n.basename;e(6,d=F);const S=Mt().format||Tt,M=h.moment(F,S,!0);e(5,f=M.isValid()?M.format("dddd, MMMM Do YYYY"):F)}}),Fe(()=>{if(m=!0,u&&g)try{g.detach&&g.detach(),c&&c.empty()}catch(F){console.error("Error cleaning up editor:",F)}});function v(){if(n instanceof h.TFile&&!u&&!m)try{const F=n instanceof h.TFile?n.basename:"unknown";[g]=Ve(s,c,o),g.setPinned(!0);const S=!s.settings.hideBacklinks&&Yi(s.app,n);g.setViewState({type:"markdown",state:{file:n.path,mode:"source",source:!1,backlinks:S,backlinkOpts:{collapseAll:!1,extraContext:!1,sortOrder:"alphabetical",showSearch:!1,searchQuery:"",backlinkCollapsed:!1,unlinkedCollapsed:!0}}}),g.parentLeaf=o,e(3,u=!0),l&&window.setTimeout(()=>{if((g==null?void 0:g.view)instanceof h.MarkdownView){const M=g.view.editor;M.focus(),M.setCursor(M.lineCount(),0)}},400)}catch(F){console.error("Error creating leaf view:",F)}}function b(){n instanceof h.TFile&&(o&&!(o!=null&&o.pinned)?o.openFile(n):s.app.workspace.getLeaf(!1).openFile(n))}function w(){var F,S;const M=(S=(F=g==null?void 0:g.view)===null||F===void 0?void 0:F.editMode)===null||S===void 0?void 0:S.editor;M&&!M.hasFocus()&&M.focus()}function x(){e(7,y=!y)}function E(F){st[F?"unshift":"push"](()=>{c=F,e(2,c)})}function C(F){st[F?"unshift":"push"](()=>{r=F,e(4,r)})}return i.$$set=F=>{"file"in F&&e(0,n=F.file),"plugin"in F&&e(11,s=F.plugin),"leaf"in F&&e(12,o=F.leaf),"shouldRender"in F&&e(1,a=F.shouldRender),"autoFocus"in F&&e(13,l=F.autoFocus)},i.$$.update=()=>{i.$$.dirty&14&&c&&a&&!u&&v()},[n,a,c,u,r,f,d,y,b,w,x,s,o,l,E,C]}class Vi extends Ce{constructor(t){super(),De(this,t,Hi,Ii,ge,{file:0,plugin:11,leaf:12,shouldRender:1,autoFocus:13})}}function Wi(i){return i()}function ji(i){i.forEach(Wi)}const gt=[],qt=[],yt=[],zt=[],Se=Promise.resolve();let Rt=!1;function Ui(){Rt||(Rt=!0,Se.then(Qi))}function qi(){return Ui(),Se}function zi(i){yt.push(i)}const Dt=new Set;let mt=0;function Qi(){do{for(;mt<gt.length;){const i=gt[mt];mt++,Zi(i.$$)}for(gt.length=0,mt=0;qt.length;)qt.pop()();for(let i=0;i<yt.length;i+=1){const t=yt[i];Dt.has(t)||(Dt.add(t),t())}yt.length=0}while(gt.length);for(;zt.length;)zt.pop()();Rt=!1,Dt.clear()}function Zi(i){if(i.fragment!==null){i.update(),ji(i.before_update);const t=i.dirty;i.dirty=[-1],i.fragment&&i.fragment.p(i.ctx,t),i.after_update.forEach(zi)}}const Gi={root:null,rootMargin:"0px",threshold:0,unobserveOnEnter:!1},H=(i,t)=>new CustomEvent(i,{detail:t});function Te(i,t={}){const{root:e,rootMargin:n,threshold:s,unobserveOnEnter:o}=Object.assign(Object.assign({},Gi),t);let a={x:void 0,y:void 0},l={vertical:void 0,horizontal:void 0};if(typeof IntersectionObserver<"u"&&i){const c=new IntersectionObserver((r,f)=>{r.forEach(d=>{a.y>d.boundingClientRect.y?l.vertical="up":l.vertical="down",a.x>d.boundingClientRect.x?l.horizontal="left":l.horizontal="right",a={y:d.boundingClientRect.y,x:d.boundingClientRect.x};const u={inView:d.isIntersecting,entry:d,scrollDirection:l,node:i,observer:f};i.dispatchEvent(H("inview_change",u)),i.dispatchEvent(H("change",u)),d.isIntersecting?(i.dispatchEvent(H("inview_enter",u)),i.dispatchEvent(H("enter",u)),o&&f.unobserve(i)):(i.dispatchEvent(H("inview_leave",u)),i.dispatchEvent(H("leave",u)))})},{root:e,rootMargin:n,threshold:s});return qi().then(()=>{i.dispatchEvent(H("inview_init",{observer:c,node:i})),i.dispatchEvent(H("init",{observer:c,node:i}))}),c.observe(i),{destroy(){c.unobserve(i)}}}}class Ki{constructor(t){this.allFiles=[],this.filteredFiles=[],this.hasFetched=!1,this.hasCurrentDay=!0,this.cacheDailyNotes={},this.options=t,this.fetchFiles()}parseTimeField(t){const e=t||"mtime",n=e.endsWith("Reverse"),s=n?e.replace("Reverse",""):e;return{isReverse:n,baseTimeField:s}}sortFilesByTimeField(t,e){const{isReverse:n,baseTimeField:s}=this.parseTimeField(e);return[...t].sort((o,a)=>s==="name"?n?a.name.localeCompare(o.name):o.name.localeCompare(a.name):n?o.stat[s]-a.stat[s]:a.stat[s]-o.stat[s])}fetchFiles(){if(!this.hasFetched){switch(this.options.mode){case"daily":this.fetchDailyNotes();break;case"folder":this.fetchFolderFiles();break;case"tag":this.fetchTaggedFiles();break}this.hasFetched=!0,this.checkDailyNote(),this.filterFilesByRange()}}fetchDailyNotes(){this.cacheDailyNotes=vt();const t=Object.values(this.cacheDailyNotes),{isReverse:e,baseTimeField:n}=this.parseTimeField(this.options.timeField);if(n==="name")this.allFiles=[...t].sort((s,o)=>{const a=s.name.localeCompare(o.name);return e?-a:a});else{const s=h.moment().startOf("day"),o=Object.keys(this.cacheDailyNotes).sort().reverse(),a=this.options.hideUnreachedDates?o.filter(l=>h.moment(l,"YYYY-MM-DD").isSameOrBefore(s)):o;for(const l of a)this.allFiles.push(this.cacheDailyNotes[l]);n!=="ctime"&&n!=="mtime"&&(this.allFiles=this.sortFilesByTimeField(this.allFiles,this.options.timeField))}}fetchFolderFiles(){if(!this.options.target||!this.options.app)return;const t=this.options.app.vault.getMarkdownFiles();this.allFiles=t.filter(e=>{var s;const n=((s=e.parent)==null?void 0:s.path)||"";return n===this.options.target||n.startsWith(this.options.target+"/")}),this.allFiles=this.sortFilesByTimeField(this.allFiles,this.options.timeField)}fetchTaggedFiles(){if(!this.options.target||!this.options.app)return;const t=this.options.app.vault.getMarkdownFiles(),e=this.options.target.startsWith("#")?this.options.target:"#"+this.options.target;this.allFiles=t.filter(n=>{var o;const s=(o=this.options.app)==null?void 0:o.metadataCache.getFileCache(n);return!s||!s.tags?!1:s.tags.some(a=>a.tag===e)}),this.allFiles=this.sortFilesByTimeField(this.allFiles,this.options.timeField)}filterFilesByRange(){return this.options.timeRange?(this.filteredFiles=[],this.options.timeRange==="all"?(this.filteredFiles=[...this.allFiles],this.filteredFiles):(this.options.mode==="daily"?this.filterDailyNotesByRange():this.filterFilesByTimeRange(),this.filteredFiles)):(this.filteredFiles=[...this.allFiles],this.filteredFiles)}filterFilesByTimeRange(){const t=h.moment(),{isReverse:e,baseTimeField:n}=this.parseTimeField(this.options.timeField);this.filteredFiles=this.allFiles.filter(s=>{const o=h.moment(s.stat[n]);return this.isDateInRange(o,t)}),e&&this.filteredFiles.reverse()}filterDailyNotesByRange(){const t=h.moment(),e=Mt().format||Tt;this.filteredFiles=this.allFiles.filter(n=>{const s=h.moment(n.basename,e);return this.isDateInRange(s,t)})}isDateInRange(t,e){switch(this.options.timeRange){case"week":return t.isSame(e,"week");case"month":return t.isSame(e,"month");case"year":return t.isSame(e,"year");case"last-week":return t.isBetween(h.moment().subtract(1,"week").startOf("week"),h.moment().subtract(1,"week").endOf("week"),null,"[]");case"last-month":return t.isBetween(h.moment().subtract(1,"month").startOf("month"),h.moment().subtract(1,"month").endOf("month"),null,"[]");case"last-year":return t.isBetween(h.moment().subtract(1,"year").startOf("year"),h.moment().subtract(1,"year").endOf("year"),null,"[]");case"quarter":return t.isSame(e,"quarter");case"last-quarter":return t.isBetween(h.moment().subtract(1,"quarter").startOf("quarter"),h.moment().subtract(1,"quarter").endOf("quarter"),null,"[]");case"custom":if(this.options.customRange){const n=h.moment(this.options.customRange.start),s=h.moment(this.options.customRange.end);return t.isBetween(n,s,null,"[]")}return!1;default:return!0}}checkDailyNote(){if(this.options.mode!=="daily")return this.hasCurrentDay=!0,!0;this.cacheDailyNotes=vt();const t=h.moment();return $t(t,this.cacheDailyNotes)?(this.hasCurrentDay===!1&&(this.allFiles=[],this.fetchDailyNotes(),this.filterFilesByRange()),this.hasCurrentDay=!0,!0):(this.hasCurrentDay=!1,!1)}async createNewDailyNote(){if(this.options.mode!=="daily"||this.hasCurrentDay)return null;const t=h.moment(),e=await fe(t);return e?(this.allFiles.push(e),this.allFiles=this.sortDailyNotes(this.allFiles),this.hasCurrentDay=!0,this.filterFilesByRange(),e):null}fileCreate(t){this.options.mode==="daily"?this.handleDailyNoteCreate(t):this.options.mode==="folder"?this.handleFolderFileCreate(t):this.options.mode==="tag"&&this.handleTaggedFileCreate(t)}handleDailyNoteCreate(t){const e=Nt(t,"day"),n=Mt().format||Tt;if(!e)return;if(this.filteredFiles.length===0){this.allFiles.push(t),this.allFiles=this.sortDailyNotes(this.allFiles),this.filterFilesByRange();return}const s=this.filteredFiles[this.filteredFiles.length-1],o=this.filteredFiles[0],a=h.moment(s.basename,n),l=h.moment(o.basename,n);e.isBetween(a,l)?(this.filteredFiles.push(t),this.filteredFiles=this.sortDailyNotes(this.filteredFiles)):e.isBefore(a)?(this.allFiles.push(t),this.allFiles=this.sortDailyNotes(this.allFiles),this.filterFilesByRange()):e.isAfter(l)&&(this.filteredFiles.push(t),this.filteredFiles=this.sortDailyNotes(this.filteredFiles)),e.isSame(h.moment(),"day")&&(this.hasCurrentDay=!0)}handleFolderFileCreate(t){var n;if(!this.options.target)return;const e=((n=t.parent)==null?void 0:n.path)||"";(e===this.options.target||e.startsWith(this.options.target+"/"))&&(this.allFiles.push(t),this.allFiles=this.sortFilesByTimeField(this.allFiles,this.options.timeField),this.filterFilesByRange())}handleTaggedFileCreate(t){if(!this.options.target||!this.options.app)return;const e=this.options.target.startsWith("#")?this.options.target:"#"+this.options.target,n=this.options.app.metadataCache.getFileCache(t);!n||!n.tags||n.tags.some(s=>s.tag===e)&&(this.allFiles.push(t),this.allFiles=this.sortFilesByTimeField(this.allFiles,this.options.timeField),this.filterFilesByRange())}fileDelete(t){this.options.mode==="daily"&&Nt(t,"day")?(this.filteredFiles=this.filteredFiles.filter(e=>e.basename!==t.basename),this.allFiles=this.allFiles.filter(e=>e.basename!==t.basename),this.filterFilesByRange(),this.checkDailyNote()):(this.filteredFiles=this.filteredFiles.filter(e=>e.basename!==t.basename),this.allFiles=this.allFiles.filter(e=>e.basename!==t.basename))}sortDailyNotes(t){const{isReverse:e,baseTimeField:n}=this.parseTimeField(this.options.timeField);return n==="name"?[...t].sort((s,o)=>e?o.name.localeCompare(s.name):s.name.localeCompare(o.name)):this.sortFilesByTimeField(t,this.options.timeField)}getAllFiles(){return this.allFiles}getFilteredFiles(){return this.filteredFiles}hasCurrentDayNote(){return this.hasCurrentDay}forceRefresh(){this.allFiles=[],this.filteredFiles=[],this.hasFetched=!1,this.fetchFiles()}updateOptions(t){this.options={...this.options,...t},(t.timeRange||t.customRange)&&this.filterFilesByRange(),(t.mode||t.target)&&(this.allFiles=[],this.filteredFiles=[],this.hasFetched=!1,this.fetchFiles())}}function Qt(i,t,e){const n=i.slice();return n[34]=t[e],n}function Zt(i){let t;return{c(){t=$("div"),t.innerHTML='<div class="dn-stock-text svelte-1crs25f">No files found</div>',k(t,"class","dn-stock svelte-1crs25f")},m(e,n){I(e,t,n)},d(e){e&&P(t)}}}function Gt(i){let t,e,n;return{c(){t=$("div"),t.innerHTML='<div class="dn-blank-day-text svelte-1crs25f">Create a daily note for today ✍</div>',k(t,"class","dn-blank-day svelte-1crs25f"),k(t,"aria-hidden","true")},m(s,o){I(s,t,o),e||(n=V(t,"click",i[12]),e=!0)},p:U,d(s){s&&P(t),e=!1,n()}}}function Kt(i,t){let e,n,s,o,a,l;n=new Vi({props:{file:t[34],plugin:t[0],leaf:t[1],shouldRender:t[4].has(t[34].path),autoFocus:t[14](t[34])}});function c(...r){return t[25](t[34],...r)}return{key:i,first:null,c(){e=$("div"),Ai(n.$$.fragment),k(e,"class","daily-note-wrapper svelte-1crs25f"),this.first=e},m(r,f){I(r,e,f),be(n,e,null),o=!0,a||(l=[me(s=Te.call(null,e,{rootMargin:"80%",unobserveOnEnter:!1,root:t[1].view.contentEl})),V(e,"inview_change",c)],a=!0)},p(r,f){t=r;const d={};f[0]&64&&(d.file=t[34]),f[0]&1&&(d.plugin=t[0]),f[0]&2&&(d.leaf=t[1]),f[0]&80&&(d.shouldRender=t[4].has(t[34].path)),f[0]&64&&(d.autoFocus=t[14](t[34])),n.$set(d),s&&ut(s.update)&&f[0]&2&&s.update.call(null,{rootMargin:"80%",unobserveOnEnter:!1,root:t[1].view.contentEl})},i(r){o||(Ft(n.$$.fragment,r),o=!0)},o(r){Ot(n.$$.fragment,r),o=!1},d(r){r&&P(e),Ee(n),a=!1,B(l)}}}function Jt(i){let t;return{c(){t=$("div"),t.textContent="—— No more of results ——",k(t,"class","no-more-text svelte-1crs25f")},m(e,n){I(e,t,n)},d(e){e&&P(t)}}}function Ji(i){var x;let t,e,n=i[3]==="daily"&&!((x=i[5])!=null&&x.hasCurrentDayNote())&&(i[2]==="all"||i[2]==="week"||i[2]==="month"||i[2]==="year"||i[2]==="quarter"),s,o=[],a=new Map,l,c,r,f,d,u,g,m=i[6].length===0&&Zt(),y=n&&Gt(i),v=Vt(i[6]);const b=E=>E[34].path;for(let E=0;E<v.length;E+=1){let C=Qt(i,v,E),F=b(C);a.set(F,o[E]=Kt(F,C))}let w=!i[7]&&Jt();return{c(){t=$("div"),m&&m.c(),e=W(),y&&y.c(),s=W();for(let E=0;E<o.length;E+=1)o[E].c();l=W(),c=$("div"),f=W(),w&&w.c(),k(c,"class","dn-view-loader"),k(t,"class","daily-note-view")},m(E,C){I(E,t,C),m&&m.m(t,null),R(t,e),y&&y.m(t,null),R(t,s);for(let F=0;F<o.length;F+=1)o[F]&&o[F].m(t,null);R(t,l),R(t,c),i[26](c),R(t,f),w&&w.m(t,null),d=!0,u||(g=[me(r=Te.call(null,c,{root:i[1].view.containerEl})),V(c,"inview_init",i[9]),V(c,"inview_change",i[11]),V(c,"inview_leave",i[10])],u=!0)},p(E,C){var F;E[6].length===0?m||(m=Zt(),m.c(),m.m(t,e)):m&&(m.d(1),m=null),C[0]&44&&(n=E[3]==="daily"&&!((F=E[5])!=null&&F.hasCurrentDayNote())&&(E[2]==="all"||E[2]==="week"||E[2]==="month"||E[2]==="year"||E[2]==="quarter")),n?y?y.p(E,C):(y=Gt(E),y.c(),y.m(t,s)):y&&(y.d(1),y=null),C[0]&24659&&(v=Vt(E[6]),Li(),o=Oi(o,C,b,1,E,v,a,t,$i,Kt,l,Qt),Ri()),r&&ut(r.update)&&C[0]&2&&r.update.call(null,{root:E[1].view.containerEl}),E[7]?w&&(w.d(1),w=null):w||(w=Jt(),w.c(),w.m(t,null))},i(E){if(!d){for(let C=0;C<v.length;C+=1)Ft(o[C]);d=!0}},o(E){for(let C=0;C<o.length;C+=1)Ot(o[C]);d=!1},d(E){E&&P(t),m&&m.d(),y&&y.d();for(let C=0;C<o.length;C+=1)o[C].d();i[26](null),w&&w.d(),u=!1,B(g)}}}const Xi=1;function tn(i,t,e){let n,{plugin:s}=t,{leaf:o}=t,{selectedRange:a="all"}=t,{customRange:l=null}=t,{selectionMode:c="daily"}=t,{target:r=""}=t,{timeField:f="mtime"}=t,d,u=[],g=[],m=new Set,y=!0,v=!0,b,w;function x(){const p=o.view.contentEl;!p||!y||p.scrollTop+p.clientHeight*2.5>p.scrollHeight&&S()}ve(()=>{var p;e(5,w=new Ki(n)),e(24,g=w.getFilteredFiles()),e(7,y=g.length>0),C(),E(),(p=o.view.contentEl)===null||p===void 0||p.addEventListener("scroll",x,{passive:!0})}),Fe(()=>{var p;(p=o.view.contentEl)===null||p===void 0||p.removeEventListener("scroll",x)});function E(){if(!o||!o.view||!o.view.titleEl)return;const p=o.view.titleEl;p.empty();let T="";c==="daily"&&a!=="all"?a==="custom"&&l?T=`Showing notes from: ${h.moment(l.start).format("YYYY-MM-DD")} to ${h.moment(l.end).format("YYYY-MM-DD")}`:T=`Showing notes for: ${a}`:c==="folder"?(T=`Showing files from folder: ${r}`,a!=="all"&&(T+=` (${f==="ctime"?"created":"modified"} ${a})`)):c==="tag"&&(T=`Showing files with tag: ${r}`,a!=="all"&&(T+=` (${f==="ctime"?"created":"modified"} ${a})`)),T?p.setText(T):p.setText("Daily Notes")}function C(){d||(d=setInterval(S,1))}function F(){clearInterval(d),d=null}function S(){o.height!==0&&(!w||!y||(g.length===0?e(7,y=!1):(e(6,u=[...u,...g.splice(0,Xi)]),v&&window.setTimeout(()=>{M(),v=!1},100))))}function M(){if(!b)return;const p=b.getBoundingClientRect(),T=window.innerHeight,L=o.view.contentEl.clientHeight||o.view.contentEl.innerHeight||T,z=Math.max(T,L)+200;p.top<z&&(S(),window.setTimeout(()=>{y&&b&&b.getBoundingClientRect().top<z&&M()},50))}function O(){return Bi(this,void 0,void 0,function*(){const p=yield w.createNewDailyNote();p&&(e(6,u=[p,...u]),m.add(p.path),e(4,m))})}function q(){w.forceRefresh(),e(6,u=[]),m.clear(),e(24,g=w.getFilteredFiles()),e(7,y=g.length>0),v=!0,C()}function Me(){if(c!=="daily")return;const p=w.hasCurrentDayNote();w.checkDailyNote();const T=w.hasCurrentDayNote();if(!p&&T&&(e(6,u=[]),m.clear(),e(24,g=w.getFilteredFiles()),e(7,y=g.length>0),v=!0,C()),!T)return;const L=$t(h.moment(),vt());L&&(m.add(L.path),e(4,m),At(L))}function At(p,T=0){window.setTimeout(()=>{var L,z;let X=null;if(s.app.workspace.iterateAllLeaves(Y=>{var kt;et(Y)&&Y.view instanceof h.MarkdownView&&((kt=Y.view.file)===null||kt===void 0?void 0:kt.path)===p.path&&(X=Y)}),X&&X.view instanceof h.MarkdownView){const Y=X.view.editor;Y.focus(),Y.setCursor(Y.lineCount(),0),(z=(L=X.view.containerEl).scrollIntoView)===null||z===void 0||z.call(L,{block:"center"})}else T<10&&At(p,T+1)},100)}function Ne(){Pt(),e(6,u),e(5,w),e(2,a),e(15,l),e(3,c),e(16,r),e(17,f),e(4,m),e(24,g)}function Pt(){const p=w.hasCurrentDayNote();w.checkDailyNote();const T=w.hasCurrentDayNote();(p!==T||c==="daily"&&a!=="all")&&(e(24,g=w.getFilteredFiles()),c==="daily"&&(e(6,u=[]),m.clear(),e(7,y=g.length>0),v=!0,C()))}function xe(p){w.fileCreate(p),c==="daily"?w.getFilteredFiles().some(L=>L.basename===p.basename)&&!u.some(L=>L.basename===p.basename)&&(e(6,u=[p,...u]),m.add(p.path),e(4,m)):e(6,u=w.getFilteredFiles().slice(0,u.length))}function Le(p){w.fileDelete(p),e(6,u=u.filter(T=>T.basename!==p.basename)),m.has(p.path)&&(m.delete(p.path),e(4,m))}function _t(p,T){T?m.add(p.path):m.delete(p.path),e(4,m)}function Re(p){var T;if(!s.settings.autoFocus)return!1;const L=Nt(p,"day");return(T=L==null?void 0:L.isSame(h.moment(),"day"))!==null&&T!==void 0?T:!1}const $e=(p,{detail:T})=>_t(p,T.inView);function Oe(p){st[p?"unshift":"push"](()=>{b=p,e(8,b)})}return i.$$set=p=>{"plugin"in p&&e(0,s=p.plugin),"leaf"in p&&e(1,o=p.leaf),"selectedRange"in p&&e(2,a=p.selectedRange),"customRange"in p&&e(15,l=p.customRange),"selectionMode"in p&&e(3,c=p.selectionMode),"target"in p&&e(16,r=p.target),"timeField"in p&&e(17,f=p.timeField)},i.$$.update=()=>{i.$$.dirty[0]&229389&&(n={mode:c,target:r,timeRange:a,customRange:l,app:s.app,timeField:f,hideUnreachedDates:s.settings.hideUnreachedDates}),i.$$.dirty[0]&17006652&&w&&(a!==w.options.timeRange||l!==w.options.customRange||c!==w.options.mode||r!==w.options.target||f!==w.options.timeField)&&(w.updateOptions({timeRange:a,customRange:l,mode:c,target:r,timeField:f}),e(6,u=[]),m.clear(),e(24,g=w.getFilteredFiles()),e(7,y=g.length>0),v=!0,C(),E())},[s,o,a,c,m,w,u,y,b,C,F,S,O,_t,Re,l,r,f,q,Me,Ne,Pt,xe,Le,g,$e,Oe]}class en extends Ce{constructor(t){super(),De(this,t,tn,Ji,ge,{plugin:0,leaf:1,selectedRange:2,customRange:15,selectionMode:3,target:16,timeField:17,refresh:18,focusTodayNote:19,tick:20,check:21,fileCreate:22,fileDelete:23},null,[-1,-1])}get refresh(){return this.$$.ctx[18]}get focusTodayNote(){return this.$$.ctx[19]}get tick(){return this.$$.ctx[20]}get check(){return this.$$.ctx[21]}get fileCreate(){return this.$$.ctx[22]}get fileDelete(){return this.$$.ctx[23]}}const _="daily-note-editor-view";class Xt extends h.ItemView{constructor(t,e){super(t),this.selectedDaysRange="all",this.selectionMode="daily",this.target="",this.timeField="mtime",this.timeFieldActionEl=null,this.customRange=null,this.getMode=()=>"source",this.onFileCreate=n=>{n instanceof h.TFile&&this.view.fileCreate(n)},this.onFileDelete=n=>{n instanceof h.TFile&&this.view.fileDelete(n)},this.plugin=e,this.scope=new h.Scope(e.app.scope)}getViewType(){return _}getDisplayText(){return this.selectionMode==="daily"?"Daily Notes":this.selectionMode==="folder"?`Folder: ${this.target}`:this.selectionMode==="tag"?`Tag: ${this.target}`:"Notes"}getIcon(){return this.selectionMode==="daily"?"calendar":this.selectionMode==="folder"?"folder":this.selectionMode==="tag"?"tag":"document"}setSelectedRange(t){this.selectedDaysRange=t,this.view&&(t==="custom"?this.view.$set({selectedRange:t,customRange:this.customRange}):this.view.$set({selectedRange:t}))}setSelectionMode(t,e=""){this.selectionMode=t,this.target=e,this.timeFieldActionEl&&(this.timeFieldActionEl.style.display=t==="daily"?"none":""),this.view&&this.view.$set({selectionMode:t,target:e})}saveCurrentSelectionAsPreset(){this.selectionMode!=="daily"&&this.target&&this.plugin.settings.preset.findIndex(e=>e.type===this.selectionMode&&e.target===this.target)===-1&&(this.plugin.settings.preset.push({type:this.selectionMode,target:this.target}),this.plugin.saveSettings())}getState(){return{...super.getState(),selectionMode:this.selectionMode,target:this.target,timeField:this.timeField,selectedRange:this.selectedDaysRange,customRange:this.customRange}}async setState(t,e){if(await super.setState(t,e),t&&typeof t=="object"&&!this.view){const n=t;n.selectionMode&&(this.selectionMode=n.selectionMode),n.target&&(this.target=n.target),n.timeField&&(this.timeField=n.timeField),n.selectedRange&&(this.selectedDaysRange=n.selectedRange),n.customRange&&(this.customRange=n.customRange),this.view=new en({target:this.contentEl,props:{plugin:this.plugin,leaf:this.leaf,selectedRange:this.selectedDaysRange,customRange:this.customRange,selectionMode:this.selectionMode,target:this.target,timeField:this.timeField}}),this.app.workspace.onLayoutReady(this.view.tick.bind(this)),this.registerInterval(window.setInterval(async()=>{this.view.check()},1e3*60*60))}}setTimeField(t){this.timeField=t,this.view&&this.view.$set({timeField:t})}openDailyNoteEditor(){this.plugin.openDailyNoteEditor()}focusTodayNote(){this.view&&this.view.focusTodayNote()}async onOpen(){this.scope.register(["Mod"],"f",t=>{}),this.timeFieldActionEl=this.addAction("arrow-up-down","Sort order",t=>{const e=new h.Menu,n=(s,o)=>{e.addItem(a=>{a.setTitle(s),a.setChecked(this.timeField===o),a.onClick(()=>{this.setTimeField(o)})})};n("Creation Time","ctime"),n("Modification Time","mtime"),n("Creation Time (Reverse)","ctimeReverse"),n("Modification Time (Reverse)","mtimeReverse"),n("Name (A-Z)","name"),n("Name (Z-A)","nameReverse"),e.showAtMouseEvent(t)}),this.selectionMode==="daily"&&(this.timeFieldActionEl.style.display="none"),this.addAction("layers-2","Select view mode",t=>{const e=new h.Menu,n=(s,o)=>{e.addItem(a=>{a.setTitle(s),a.setChecked(this.selectionMode===o&&!this.target),a.onClick(()=>{o==="daily"?this.setSelectionMode(o):new sn(this.plugin.app,o,c=>{this.setSelectionMode(o,c),this.saveCurrentSelectionAsPreset()}).open()})})};if(n("Daily Notes","daily"),n("Folder","folder"),n("Tag","tag"),this.plugin.settings.preset.length>0){e.addSeparator(),e.addItem(s=>{s.setTitle("Saved Presets"),s.setDisabled(!0)});for(const s of this.plugin.settings.preset){const o=s.type==="folder"?`Folder: ${s.target}`:`Tag: ${s.target}`;e.addItem(a=>{a.setTitle(o),a.setChecked(this.selectionMode===s.type&&this.target===s.target),a.onClick(()=>{this.setSelectionMode(s.type,s.target)})})}}e.showAtMouseEvent(t)}),this.addAction("calendar-range","Select date range",t=>{const e=new h.Menu,n=(s,o)=>{e.addItem(a=>{a.setTitle(s),a.setChecked(this.selectedDaysRange===o),a.onClick(()=>{this.setSelectedRange(o)})})};n("All Notes","all"),n("This Week","week"),n("This Month","month"),n("This Year","year"),n("Last Week","last-week"),n("Last Month","last-month"),n("Last Year","last-year"),n("This Quarter","quarter"),n("Last Quarter","last-quarter"),e.addSeparator(),e.addItem(s=>{s.setTitle("Custom Date Range"),s.setChecked(this.selectedDaysRange==="custom"),s.onClick(()=>{new nn(this.app,a=>{this.customRange=a,this.setSelectedRange("custom")}).open()})}),e.showAtMouseEvent(t)}),this.addAction("refresh-cw","Refresh",()=>{this.view&&this.view.refresh()}),this.app.vault.on("create",this.onFileCreate),this.app.vault.on("delete",this.onFileDelete)}onPaneMenu(t,e){(e==="tab-header"||e==="more-options")&&t.addItem(n=>{n.setIcon(this.leaf.pinned?"pin-off":"pin"),n.setTitle(this.leaf.pinned?"Unpin":"Pin"),n.onClick(()=>{this.leaf.togglePinned()})})}refreshForNewDay(){this.selectionMode==="daily"&&this.view&&this.view.refresh()}}class nn extends h.Modal{constructor(t,e){super(t),this.saveCallback=e,this.startDate=new Date,this.endDate=new Date}onOpen(){const{contentEl:t}=this;t.createEl("h2",{text:"Select Custom Date Range"});const e=t.createEl("div",{cls:"custom-range-date-container"});e.createEl("span",{text:"Start Date: "}),e.createEl("input",{type:"date",value:this.formatDate(this.startDate)}).addEventListener("change",l=>{this.startDate=new Date(l.target.value)});const s=t.createEl("div",{cls:"custom-range-date-container"});s.createEl("span",{text:"End Date: "}),s.createEl("input",{type:"date",value:this.formatDate(this.endDate)}).addEventListener("change",l=>{this.endDate=new Date(l.target.value)});const a=t.createEl("div",{cls:"custom-range-button-container"});new h.ButtonComponent(a).setButtonText("Cancel").onClick(()=>{this.close()}),new h.ButtonComponent(a).setButtonText("Confirm").setCta().onClick(()=>{this.saveCallback({start:this.startDate,end:this.endDate}),this.close()})}formatDate(t){const e=t.getFullYear(),n=String(t.getMonth()+1).padStart(2,"0"),s=String(t.getDate()).padStart(2,"0");return`${e}-${n}-${s}`}onClose(){this.contentEl.empty()}}class sn extends h.Modal{constructor(t,e,n){super(t),this.mode=e,this.saveCallback=n}onOpen(){const{contentEl:t}=this;t.empty(),t.createEl("h2",{text:this.mode==="folder"?"Select Folder":"Select Tag"});const e=t.createEl("form");e.addEventListener("submit",l=>{l.preventDefault(),this.save()});const n=e.createDiv();n.addClass("setting-item");const s=n.createDiv();s.addClass("setting-item-info"),s.createEl("div",{text:this.mode==="folder"?"Folder Path":"Tag Name",cls:"setting-item-name"}),s.createEl("div",{text:this.mode==="folder"?"Enter the path to the folder (e.g., 'folder/subfolder')":"Enter the tag name without the '#' (e.g., 'tag')",cls:"setting-item-description"});const o=n.createDiv();o.addClass("setting-item-control"),this.targetInput=o.createEl("input",{type:"text",value:""}),this.targetInput.addClass("target-input");const a=t.createDiv();a.addClass("modal-button-container"),a.createEl("button",{text:"Cancel",cls:"mod-warning",attr:{type:"button"}}).addEventListener("click",()=>{this.close()}),a.createEl("button",{text:"Save",cls:"mod-cta",attr:{type:"submit"}}).addEventListener("click",l=>{l.preventDefault(),this.save()})}save(){const t=this.targetInput.value.trim();t&&(this.saveCallback(t),this.close())}onClose(){const{contentEl:t}=this;t.empty()}}class on extends h.Plugin{async onload(){this.addSettingTab(new Ue(this.app,this)),await this.loadSettings(),this.patchWorkspace(),this.patchWorkspaceLeaf(),We(),this.lastCheckedDay=h.moment().local().format("YYYY-MM-DD"),this.settings.useArrowUpOrDownToNavigate&&this.registerEditorExtension([Ei({app:this.app,plugin:this})]),this.registerView(_,t=>this.view=new Xt(t,this)),this.addRibbonIcon("calendar-range","Open Daily Note Editor",t=>this.openDailyNoteEditor()),this.addCommand({id:"open-daily-note-editor",name:"Open Daily Note Editor",callback:()=>this.openDailyNoteEditor()}),this.initCssRules(),this.settings.createAndOpenOnStartup&&this.app.workspace.onLayoutReady(async()=>{await this.ensureTodaysDailyNoteExists(),!(this.app.workspace.getLeavesOfType(_).length>0)&&await this.openDailyNoteEditor()}),this.registerInterval(window.setInterval(this.checkDayChange.bind(this),1e3*60*15)),this.app.workspace.on("file-menu",(t,e,n,s)=>{e instanceof h.TFolder&&t.addItem(o=>{o.setIcon("calendar-range"),o.setTitle("Open daily notes for this folder"),o.onClick(()=>{this.openFolderView(e.path)})})})}onunload(){this.app.workspace.detachLeavesOfType(_),document.body.toggleClass("daily-notes-hide-frontmatter",!1),document.body.toggleClass("daily-notes-hide-backlinks",!1)}async openDailyNoteEditor(){const t=this.app.workspace;if(this.settings.createOnOpen&&await this.ensureTodaysDailyNoteExists(),this.settings.switchToExisting){const n=t.getLeavesOfType(_);if(n.length>0){t.revealLeaf(n[0]),this.settings.autoFocus&&n[0].view.focusTodayNote();return}}const e=t.getLeaf(!0);await e.setViewState({type:_}),t.revealLeaf(e)}async openFolderView(t,e="mtime"){const n=this.app.workspace,s=n.getLeaf(!0);await s.setViewState({type:_});const o=s.view;o.setSelectionMode("folder",t),o.setTimeField(e),n.revealLeaf(s)}async openTagView(t,e="mtime"){const n=this.app.workspace,s=n.getLeaf(!0);await s.setViewState({type:_});const o=s.view;o.setSelectionMode("tag",t),o.setTimeField(e),n.revealLeaf(s)}async ensureTodaysDailyNoteExists(){try{const t=h.moment(),e=vt();$t(t,e)||await fe(t)}catch(t){console.error("Failed to create daily note:",t)}}initCssRules(){document.body.toggleClass("daily-notes-hide-frontmatter",this.settings.hideFrontmatter),document.body.toggleClass("daily-notes-hide-backlinks",this.settings.hideBacklinks)}patchWorkspace(){let t=!1;const e=ft(h.Workspace.prototype,{getActiveViewOfType:n=>function(s){const o=n.call(this,s);if(!o&&(s==null?void 0:s.VIEW_TYPE)==="markdown"){const a=this.activeLeaf;return(a==null?void 0:a.view)instanceof Xt?a.view.editMode:o}return o},changeLayout(n){return async function(s){t=!0;try{await n.call(this,s)}finally{t=!1}}},iterateLeaves(n){return function(s,o){if(n.call(this,s,o))return!0;const a=typeof s=="function"?s:o,l=typeof s=="function"?o:s;if(!l||t)return!1;if(!h.requireApiVersion("0.15.0")&&(l===this.app.workspace.rootSplit||h.WorkspaceContainer&&l instanceof h.WorkspaceContainer)){for(const c of it.popoversForWindow(l.win))if(n.call(this,a,c.rootSplit))return!0}return!1}},setActiveLeaf:n=>function(s,o){if(s.parentLeaf){s.parentLeaf.activeTime=17e11,n.call(this,s.parentLeaf,o),s.view.editMode&&(this.activeEditor=s.view,s.parentLeaf.view.editMode=s.view);return}return n.call(this,s,o)}});this.register(e)}patchWorkspaceLeaf(){this.register(ft(h.WorkspaceLeaf.prototype,{getRoot(t){return function(){const e=t.call(this);return(e==null?void 0:e.getRoot)===this.getRoot?e:e==null?void 0:e.getRoot()}},setPinned(t){return function(e){t.call(this,e),et(this)&&!e&&this.setPinned(!0)}},openFile(t){return function(e,n){if(et(this)){setTimeout(ft(h.Workspace.prototype,{recordMostRecentOpenedFile(o){return function(a){if(a!==e)return o.call(this,a)}}}),1);const s=this.app.plugins.plugins["recent-files-obsidian"];s&&setTimeout(ft(s,{shouldAddFile(o){return function(a){return a!==e&&o.call(this,a)}}}),1)}return t.call(this,e,n)}}}))}async loadSettings(){this.settings=Object.assign({},je,await this.loadData())}async saveSettings(){await this.saveData(this.settings)}async checkDayChange(){const t=h.moment().local().format("YYYY-MM-DD");if(t!==this.lastCheckedDay){this.lastCheckedDay=t,this.settings.createAndOpenOnStartup&&await this.ensureTodaysDailyNoteExists();const e=this.app.workspace.getLeavesOfType(_);if(e.length>0)for(const n of e){const s=n.view;s&&s.refreshForNewDay()}}}}module.exports=on;
+"use strict";
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+const require$$0 = require("obsidian");
+const view = require("@codemirror/view");
+const state = require("@codemirror/state");
+function around(obj, factories) {
+  const removers = Object.keys(factories).map((key) => around1(obj, key, factories[key]));
+  return removers.length === 1 ? removers[0] : function() {
+    removers.forEach((r) => r());
+  };
+}
+function around1(obj, method, createWrapper) {
+  const original = obj[method], hadOwn = obj.hasOwnProperty(method);
+  let current = createWrapper(original);
+  if (original)
+    Object.setPrototypeOf(current, original);
+  Object.setPrototypeOf(wrapper, current);
+  obj[method] = wrapper;
+  return remove;
+  function wrapper(...args) {
+    if (current === original && obj[method] === wrapper)
+      remove();
+    return current.apply(this, args);
+  }
+  function remove() {
+    if (obj[method] === wrapper) {
+      if (hadOwn)
+        obj[method] = original;
+      else
+        delete obj[method];
+    }
+    if (current === original)
+      return;
+    current = original;
+    Object.setPrototypeOf(wrapper, original || Function);
+  }
+}
+function genId(size2) {
+  const chars = [];
+  for (let n = 0; n < size2; n++) chars.push((16 * Math.random() | 0).toString(16));
+  return chars.join("");
+}
+const popovers = /* @__PURE__ */ new WeakMap();
+function isDailyNoteLeaf(leaf) {
+  return leaf.containerEl.matches(".dn-editor.dn-leaf-view .workspace-leaf");
+}
+function nosuper(base) {
+  const derived = function() {
+    return Object.setPrototypeOf(new require$$0.Component(), new.target.prototype);
+  };
+  derived.prototype = base.prototype;
+  return Object.setPrototypeOf(derived, base);
+}
+const spawnLeafView = (plugin, initiatingEl, leaf, onShowCallback) => {
+  let parent = plugin.app.workspace.activeLeaf;
+  if (!parent) parent = leaf;
+  if (!initiatingEl) initiatingEl = parent == null ? void 0 : parent.containerEl;
+  const hoverPopover = new DailyNoteEditor(parent, initiatingEl, plugin, void 0, onShowCallback);
+  return [hoverPopover.attachLeaf(), hoverPopover];
+};
+class DailyNoteEditor extends nosuper(require$$0.HoverPopover) {
+  constructor(parent, targetEl, plugin, waitTime, onShowCallback) {
+    var _a, _b;
+    super();
+    this.targetEl = targetEl;
+    this.plugin = plugin;
+    this.onShowCallback = onShowCallback;
+    this.abortController = this.addChild(new require$$0.Component());
+    this.detaching = false;
+    this.opening = false;
+    this.rootSplit = new require$$0.WorkspaceSplit(window.app.workspace, "vertical");
+    this.isPinned = true;
+    this.oldPopover = (_a = this.parent) == null ? void 0 : _a.DailyNoteEditor;
+    this.id = genId(8);
+    if (waitTime === void 0) {
+      waitTime = 300;
+    }
+    this.onTarget = true;
+    this.parent = parent;
+    this.waitTime = waitTime;
+    this.state = require$$0.PopoverState.Showing;
+    this.document = ((_b = this.targetEl) == null ? void 0 : _b.ownerDocument) ?? window.activeDocument ?? window.document;
+    this.hoverEl = this.document.defaultView.createDiv({
+      cls: "dn-editor dn-leaf-view",
+      attr: { id: "dn-" + this.id }
+    });
+    const { hoverEl } = this;
+    this.abortController.load();
+    this.timer = window.setTimeout(this.show.bind(this), waitTime);
+    this.setActive = this._setActive.bind(this);
+    if (hoverEl) {
+      hoverEl.addEventListener("mousedown", this.setActive);
+    }
+    popovers.set(this.hoverEl, this);
+    this.hoverEl.addClass("dn-editor");
+    this.containerEl = this.hoverEl.createDiv("dn-content");
+    this.buildWindowControls();
+    this.setInitialDimensions();
+  }
+  static activeWindows() {
+    const windows = [window];
+    const { floatingSplit } = app.workspace;
+    if (floatingSplit) {
+      for (const split of floatingSplit.children) {
+        if (split.win) windows.push(split.win);
+      }
+    }
+    return windows;
+  }
+  static containerForDocument(plugin, doc) {
+    if (doc !== document && plugin.app.workspace.floatingSplit)
+      for (const container of plugin.app.workspace.floatingSplit.children) {
+        if (container.doc === doc) return container;
+      }
+    return plugin.app.workspace.rootSplit;
+  }
+  static activePopovers() {
+    return this.activeWindows().flatMap(this.popoversForWindow);
+  }
+  static popoversForWindow(win) {
+    var _a;
+    return Array.prototype.slice.call(((_a = win == null ? void 0 : win.document) == null ? void 0 : _a.body.querySelectorAll(".dn-leaf-view")) ?? []).map((el) => popovers.get(el)).filter((he) => he);
+  }
+  static forLeaf(leaf) {
+    const el = leaf && document.body.matchParent.call(leaf.containerEl, ".dn-leaf-view");
+    return el ? popovers.get(el) : void 0;
+  }
+  static iteratePopoverLeaves(ws, cb) {
+    for (const popover of this.activePopovers()) {
+      if (popover.rootSplit && ws.iterateLeaves(cb, popover.rootSplit)) return true;
+    }
+    return false;
+  }
+  _setActive(evt) {
+    evt.preventDefault();
+    evt.stopPropagation();
+    this.plugin.app.workspace.setActiveLeaf(this.leaves()[0], { focus: true });
+  }
+  getDefaultMode() {
+    return "source";
+  }
+  updateLeaves() {
+    if (this.onTarget && this.targetEl && !this.document.contains(this.targetEl)) {
+      this.onTarget = false;
+      this.transition();
+    }
+    let leafCount = 0;
+    this.plugin.app.workspace.iterateLeaves((leaf) => {
+      leafCount++;
+    }, this.rootSplit);
+    if (leafCount === 0) {
+      this.hide();
+    }
+    this.hoverEl.setAttribute("data-leaf-count", leafCount.toString());
+  }
+  leaves() {
+    const leaves = [];
+    this.plugin.app.workspace.iterateLeaves((leaf) => {
+      leaves.push(leaf);
+    }, this.rootSplit);
+    return leaves;
+  }
+  setInitialDimensions() {
+    this.hoverEl.style.height = "auto";
+    this.hoverEl.style.width = "100%";
+  }
+  transition() {
+    if (this.shouldShow()) {
+      if (this.state === require$$0.PopoverState.Hiding) {
+        this.state = require$$0.PopoverState.Shown;
+        window.clearTimeout(this.timer);
+      }
+    } else {
+      if (this.state === require$$0.PopoverState.Showing) {
+        this.hide();
+      } else {
+        if (this.state === require$$0.PopoverState.Shown) {
+          this.state = require$$0.PopoverState.Hiding;
+          this.timer = window.setTimeout(() => {
+            if (this.shouldShow()) {
+              this.transition();
+            } else {
+              this.hide();
+            }
+          }, this.waitTime);
+        }
+      }
+    }
+  }
+  buildWindowControls() {
+    this.titleEl = this.document.defaultView.createDiv("popover-titlebar");
+    this.titleEl.createDiv("popover-title");
+    this.containerEl.prepend(this.titleEl);
+  }
+  attachLeaf() {
+    this.rootSplit.getRoot = () => this.plugin.app.workspace[this.document === document ? "rootSplit" : "floatingSplit"];
+    this.rootSplit.getContainer = () => DailyNoteEditor.containerForDocument(this.plugin, this.document);
+    this.titleEl.insertAdjacentElement("afterend", this.rootSplit.containerEl);
+    const leaf = this.plugin.app.workspace.createLeafInParent(this.rootSplit, 0);
+    this.updateLeaves();
+    return leaf;
+  }
+  onload() {
+    super.onload();
+    this.registerEvent(this.plugin.app.workspace.on("layout-change", this.updateLeaves, this));
+    this.registerEvent(this.plugin.app.workspace.on("layout-change", () => {
+      this.rootSplit.children.forEach((item, index) => {
+        if (item instanceof require$$0.WorkspaceTabs) {
+          this.rootSplit.replaceChild(index, item.children[0]);
+        }
+      });
+    }));
+  }
+  onShow() {
+    var _a, _b;
+    const closeDelay = 600;
+    setTimeout(() => this.waitTime = closeDelay, closeDelay);
+    (_a = this.oldPopover) == null ? void 0 : _a.hide();
+    this.oldPopover = null;
+    this.hoverEl.toggleClass("is-new", true);
+    this.document.body.addEventListener(
+      "click",
+      () => {
+        this.hoverEl.toggleClass("is-new", false);
+      },
+      { once: true, capture: true }
+    );
+    if (this.parent) {
+      this.parent.DailyNoteEditor = this;
+    }
+    const viewHeaderEl = this.hoverEl.querySelector(".view-header");
+    viewHeaderEl == null ? void 0 : viewHeaderEl.remove();
+    const sizer = this.hoverEl.querySelector(".workspace-leaf");
+    if (sizer) this.hoverEl.appendChild(sizer);
+    const inlineTitle = this.hoverEl.querySelector(".inline-title");
+    if (inlineTitle) inlineTitle.remove();
+    (_b = this.onShowCallback) == null ? void 0 : _b.call(this);
+    this.onShowCallback = void 0;
+  }
+  detect(el) {
+    const { targetEl } = this;
+    if (targetEl) {
+      this.onTarget = el === targetEl || targetEl.contains(el);
+    }
+  }
+  shouldShow() {
+    return this.shouldShowSelf() || this.shouldShowChild();
+  }
+  shouldShowChild() {
+    return DailyNoteEditor.activePopovers().some((popover) => {
+      if (popover !== this && popover.targetEl && this.hoverEl.contains(popover.targetEl)) {
+        return popover.shouldShow();
+      }
+      return false;
+    });
+  }
+  shouldShowSelf() {
+    return !this.detaching && !!(this.onTarget || this.state == require$$0.PopoverState.Shown || this.document.querySelector(`body>.modal-container, body > #he${this.id} ~ .menu, body > #he${this.id} ~ .suggestion-container`));
+  }
+  show() {
+    if (!this.targetEl || this.document.body.contains(this.targetEl)) {
+      this.state = require$$0.PopoverState.Shown;
+      this.timer = 0;
+      this.targetEl.appendChild(this.hoverEl);
+      this.onShow();
+      this.plugin.app.workspace.onLayoutChange();
+      this.load();
+    } else {
+      this.hide();
+    }
+    if (this.hoverEl.dataset.imgHeight && this.hoverEl.dataset.imgWidth) {
+      this.hoverEl.style.height = parseFloat(this.hoverEl.dataset.imgHeight) + this.titleEl.offsetHeight + "px";
+      this.hoverEl.style.width = parseFloat(this.hoverEl.dataset.imgWidth) + "px";
+    }
+  }
+  onHide() {
+    var _a;
+    this.oldPopover = null;
+    if (((_a = this.parent) == null ? void 0 : _a.DailyNoteEditor) === this) {
+      this.parent.DailyNoteEditor = null;
+    }
+  }
+  hide() {
+    var _a;
+    this.onTarget = false;
+    this.detaching = true;
+    if (this.timer) {
+      window.clearTimeout(this.timer);
+      this.timer = 0;
+    }
+    this.hoverEl.hide();
+    if (this.opening) return;
+    const leaves = this.leaves();
+    if (leaves.length) {
+      leaves[0].detach();
+    } else {
+      this.parent = null;
+      (_a = this.abortController) == null ? void 0 : _a.unload();
+      this.abortController = void 0;
+      return this.nativeHide();
+    }
+  }
+  nativeHide() {
+    var _a;
+    const { hoverEl, targetEl } = this;
+    this.state = require$$0.PopoverState.Hidden;
+    hoverEl.detach();
+    if (targetEl) {
+      const parent = targetEl.matchParent(".dn-leaf-view");
+      if (parent) (_a = popovers.get(parent)) == null ? void 0 : _a.transition();
+    }
+    this.onHide();
+    this.unload();
+  }
+  resolveLink(linkText, sourcePath) {
+    const link = require$$0.parseLinktext(linkText);
+    const tFile = link ? this.plugin.app.metadataCache.getFirstLinkpathDest(link.path, sourcePath) : null;
+    return tFile;
+  }
+  async openLink(linkText, sourcePath, eState, createInLeaf) {
+    var _a, _b, _c;
+    let file = this.resolveLink(linkText, sourcePath);
+    const link = require$$0.parseLinktext(linkText);
+    if (!file && createInLeaf) {
+      const folder = this.plugin.app.fileManager.getNewFileParent(sourcePath);
+      file = await this.plugin.app.fileManager.createNewMarkdownFile(folder, link.path);
+    }
+    if (!file) {
+      return;
+    }
+    const { viewRegistry } = this.plugin.app;
+    const viewType = viewRegistry.typeByExtension[file.extension];
+    if (!viewType || !viewRegistry.viewByType[viewType]) {
+      return;
+    }
+    eState = Object.assign(this.buildEphemeralState(file, link), eState);
+    const parentMode = this.getDefaultMode();
+    const state2 = this.buildState(parentMode, eState);
+    const leaf = await this.openFile(file, state2, createInLeaf);
+    const leafViewType = (_a = leaf == null ? void 0 : leaf.view) == null ? void 0 : _a.getViewType();
+    if (leafViewType === "image") {
+      if (((_b = this.parent) == null ? void 0 : _b.hasOwnProperty("editorEl")) && this.parent.editorEl.hasClass("is-live-preview")) {
+        this.waitTime = 3e3;
+      }
+      const img = leaf.view.contentEl.querySelector("img");
+      this.hoverEl.dataset.imgHeight = String(img.naturalHeight);
+      this.hoverEl.dataset.imgWidth = String(img.naturalWidth);
+      this.hoverEl.dataset.imgRatio = String(img.naturalWidth / img.naturalHeight);
+    } else if (leafViewType === "pdf") {
+      this.hoverEl.style.height = "800px";
+      this.hoverEl.style.width = "600px";
+    }
+    if (((_c = state2.state) == null ? void 0 : _c.mode) === "source") {
+      this.whenShown(() => {
+        var _a2, _b2, _c2, _d;
+        if (require$$0.requireApiVersion("1.0")) (_c2 = (_b2 = (_a2 = leaf == null ? void 0 : leaf.view) == null ? void 0 : _a2.editMode) == null ? void 0 : _b2.reinit) == null ? void 0 : _c2.call(_b2);
+        (_d = leaf == null ? void 0 : leaf.view) == null ? void 0 : _d.setEphemeralState(state2.eState);
+      });
+    }
+  }
+  whenShown(callback) {
+    if (this.detaching) return;
+    const existingCallback = this.onShowCallback;
+    this.onShowCallback = () => {
+      if (this.detaching) return;
+      callback();
+      if (typeof existingCallback === "function") existingCallback();
+    };
+    if (this.state === require$$0.PopoverState.Shown) {
+      this.onShowCallback();
+      this.onShowCallback = void 0;
+    }
+  }
+  async openFile(file, openState, useLeaf) {
+    if (this.detaching) return;
+    const leaf = useLeaf ?? this.attachLeaf();
+    this.opening = true;
+    try {
+      await leaf.openFile(file, openState);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      this.opening = false;
+      if (this.detaching) this.hide();
+    }
+    this.plugin.app.workspace.setActiveLeaf(leaf);
+    return leaf;
+  }
+  buildState(parentMode, eState) {
+    return {
+      active: false,
+      state: { mode: "source" },
+      eState
+    };
+  }
+  buildEphemeralState(file, link) {
+    const cache = this.plugin.app.metadataCache.getFileCache(file);
+    const subpath = cache ? require$$0.resolveSubpath(cache, (link == null ? void 0 : link.subpath) || "") : void 0;
+    const eState = { subpath: link == null ? void 0 : link.subpath };
+    if (subpath) {
+      eState.line = subpath.start.line;
+      eState.startLoc = subpath.start;
+      eState.endLoc = subpath.end || void 0;
+    }
+    return eState;
+  }
+}
+const addIconList = () => {
+  require$$0.addIcon("daily-note", `<svg width="103" height="134" viewBox="0 0 103 134" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M60.3446 21.848H22.5577C19.5764 21.848 17.1595 24.2648 17.1595 27.2462V65.0331C17.1595 68.0144 19.5764 70.4312 22.5577 70.4312H60.3446C63.3259 70.4312 65.7428 68.0144 65.7428 65.0331V27.2462C65.7428 24.2648 63.3259 21.848 60.3446 21.848Z" stroke="#5C1111" stroke-width="4.81618" stroke-linecap="round" stroke-linejoin="round"/><path d="M52.2476 16.4498V27.2461" stroke="#5C1111" stroke-width="4.81618" stroke-linecap="round" stroke-linejoin="round"/><path d="M30.655 16.4498V27.2461" stroke="#5C1111" stroke-width="4.81618" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.1595 38.0424H65.7428" stroke="#5C1111" stroke-width="4.81618" stroke-linecap="round" stroke-linejoin="round"/><path d="M33.3541 54.2366L38.7523 59.6348L49.5485 48.8385" stroke="#5C1111" stroke-width="4.81618" stroke-linecap="round" stroke-linejoin="round"/><g filter="url(#filter0_ddddd_104_2)"><path d="M12.181 103.617L9.21851 95.8213L27.9292 87.0896L66.754 71.4973L93.1049 88.8047L91.3898 103.617H12.181Z" fill="#AC4DD9" stroke="black" stroke-width="0.963236"/><path d="M12.181 103.617L9.21851 95.9771L27.9292 87.0895L32.6069 103.461L12.181 103.617Z" fill="#540D75" stroke="black" stroke-width="0.963236"/><path d="M9.0625 95.6652L25.7894 67.212L27.9291 87.0894L9.21842 95.977L9.0625 95.6652Z" fill="#470068" stroke="black" stroke-width="0.481618"/><path d="M27.9291 87.0896L25.9021 66.8197L67.5335 56.2169L66.5979 71.4973L27.9291 87.0896Z" fill="#732E94" stroke="black" stroke-width="0.963236"/><path d="M66.598 71.4971L67.9466 56.3527L93.1049 88.8045L66.598 71.4971Z" fill="#C279E4" stroke="black" stroke-width="0.481618"/><path d="M9.0625 95.6652L25.7462 66.8195L67.9465 56.0808L93.1049 88.8046L66.598 71.4972L27.9291 87.0895L9.21842 95.9771L9.0625 95.6652Z" stroke="black" stroke-width="0.963236"/><path d="M26.0579 103.617L27.9289 87.0895L32.7625 103.617H26.0579Z" fill="#61018E" stroke="black" stroke-width="0.963236"/></g><defs><filter id="filter0_ddddd_104_2" x="0.0874329" y="53.8502" width="101.958" height="79.8707" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_104_2"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="1.20405"/><feGaussianBlur stdDeviation="1.44485"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/><feBlend mode="normal" in2="effect1_dropShadow_104_2" result="effect2_dropShadow_104_2"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="5.2978"/><feGaussianBlur stdDeviation="2.6489"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0"/><feBlend mode="normal" in2="effect2_dropShadow_104_2" result="effect3_dropShadow_104_2"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="11.7996"/><feGaussianBlur stdDeviation="3.61213"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"/><feBlend mode="normal" in2="effect3_dropShadow_104_2" result="effect4_dropShadow_104_2"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="21.1912"/><feGaussianBlur stdDeviation="4.21416"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.01 0"/><feBlend mode="normal" in2="effect4_dropShadow_104_2" result="effect5_dropShadow_104_2"/><feBlend mode="normal" in="SourceGraphic" in2="effect5_dropShadow_104_2" result="shape"/></filter></defs></svg>`);
+};
+const DEFAULT_SETTINGS = {
+  hideFrontmatter: false,
+  hideBacklinks: false,
+  hideUnreachedDates: false,
+  createAndOpenOnStartup: false,
+  createOnOpen: false,
+  useArrowUpOrDownToNavigate: false,
+  autoFocus: false,
+  switchToExisting: false,
+  preset: []
+};
+class DailyNoteSettingTab extends require$$0.PluginSettingTab {
+  constructor(app2, plugin) {
+    super(app2, plugin);
+    this.debounceApplySettingsUpdate = require$$0.debounce(
+      async () => {
+        await this.plugin.saveSettings();
+      },
+      200,
+      true
+    );
+    this.debounceDisplay = require$$0.debounce(
+      async () => {
+        await this.display();
+      },
+      400,
+      true
+    );
+    this.plugin = plugin;
+  }
+  applySettingsUpdate() {
+    this.debounceApplySettingsUpdate();
+  }
+  async display() {
+    await this.plugin.loadSettings();
+    const { containerEl } = this;
+    const settings = this.plugin.settings;
+    containerEl.toggleClass("daily-note-settings-container", true);
+    containerEl.empty();
+    new require$$0.Setting(containerEl).setName("Hide frontmatter").setDesc("Hide frontmatter in daily notes").addToggle(
+      (toggle) => toggle.setValue(settings.hideFrontmatter).onChange(async (value) => {
+        this.plugin.settings.hideFrontmatter = value;
+        document.body.classList.toggle(
+          "daily-notes-hide-frontmatter",
+          value
+        );
+        this.applySettingsUpdate();
+      })
+    );
+    new require$$0.Setting(containerEl).setName("Hide backlinks").setDesc("Hide backlinks in daily notes").addToggle(
+      (toggle) => toggle.setValue(settings.hideBacklinks).onChange(async (value) => {
+        this.plugin.settings.hideBacklinks = value;
+        document.body.classList.toggle(
+          "daily-notes-hide-backlinks",
+          value
+        );
+        this.applySettingsUpdate();
+      })
+    );
+    new require$$0.Setting(containerEl).setName("Create and open Daily Notes Editor on startup").setDesc(
+      "Automatically create today's daily note and open the Daily Notes Editor when Obsidian starts"
+    ).addToggle(
+      (toggle) => toggle.setValue(settings.createAndOpenOnStartup).onChange(async (value) => {
+        this.plugin.settings.createAndOpenOnStartup = value;
+        this.applySettingsUpdate();
+      })
+    );
+    new require$$0.Setting(containerEl).setName("Create daily note when opening editor").setDesc(
+      "When you run the Open Daily Notes Editor command, create today's daily note if it doesn't exist yet. When 'Auto focus today's note' is also enabled, the cursor jumps to the end of that note."
+    ).addToggle(
+      (toggle) => toggle.setValue(settings.createOnOpen).onChange(async (value) => {
+        this.plugin.settings.createOnOpen = value;
+        this.applySettingsUpdate();
+      })
+    );
+    new require$$0.Setting(containerEl).setName("Use arrow up/down key to navigate between notes").addToggle(
+      (toggle) => toggle.setValue(settings.useArrowUpOrDownToNavigate).onChange(async (value) => {
+        this.plugin.settings.useArrowUpOrDownToNavigate = value;
+        this.applySettingsUpdate();
+      })
+    );
+    new require$$0.Setting(containerEl).setName("Hide future dates").setDesc("Hide the diary entries for dates that have not yet arrived.").addToggle((toggle) => toggle.setValue(settings.hideUnreachedDates).onChange(async (value) => {
+      this.plugin.settings.hideUnreachedDates = value;
+      await this.plugin.saveSettings();
+    }));
+    new require$$0.Setting(containerEl).setName("Auto focus today's note").setDesc(
+      "Automatically focus today's note and move the cursor to the end of the document"
+    ).addToggle(
+      (toggle) => toggle.setValue(settings.autoFocus).onChange(async (value) => {
+        this.plugin.settings.autoFocus = value;
+        this.applySettingsUpdate();
+      })
+    );
+    new require$$0.Setting(containerEl).setName("Switch to existing editor").setDesc(
+      "If an daily notes editor is already open, switch to it rather than open it on a new tab"
+    ).addToggle(
+      (toggle) => toggle.setValue(settings.switchToExisting).onChange(async (value) => {
+        this.plugin.settings.switchToExisting = value;
+        this.applySettingsUpdate();
+      })
+    );
+    new require$$0.Setting(containerEl).setName("Saved presets").setHeading();
+    const presetContainer = containerEl.createDiv("preset-container");
+    if (settings.preset.length === 0) {
+      presetContainer.createEl("p", {
+        text: "No presets saved yet. Select a folder or tag in the Daily Notes Editor to create a preset.",
+        cls: "no-presets-message"
+      });
+    } else {
+      settings.preset.forEach((preset, index) => {
+        new require$$0.Setting(containerEl).setName(
+          preset.type === "folder" ? "Focus on Folder: " : "Focus on Tag: "
+        ).setDesc(preset.target).addButton((button) => {
+          button.setIcon("trash");
+          button.onClick(() => {
+            settings.preset.splice(index, 1);
+            this.applySettingsUpdate();
+            this.debounceDisplay();
+          });
+        });
+      });
+    }
+    new require$$0.Setting(containerEl).setName("Add new preset").setDesc("Add a new folder or tag preset").addButton((button) => {
+      button.setButtonText("Add Preset").setCta().onClick(() => {
+        const modal = new AddPresetModal(
+          this.app,
+          (type, target) => {
+            const existingPresetIndex = settings.preset.findIndex(
+              (p) => p.type === type && p.target === target
+            );
+            if (existingPresetIndex === -1) {
+              settings.preset.push({
+                type,
+                target
+              });
+              this.applySettingsUpdate();
+              this.debounceDisplay();
+            }
+          }
+        );
+        modal.open();
+      });
+    });
+  }
+}
+class AddPresetModal extends require$$0.Modal {
+  constructor(app2, saveCallback) {
+    super(app2);
+    this.type = "folder";
+    this.saveCallback = saveCallback;
+  }
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.createEl("h2", { text: "Add New Preset" });
+    const form = contentEl.createEl("form");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      this.save();
+    });
+    const typeSetting = form.createDiv();
+    typeSetting.addClass("setting-item");
+    const typeSettingInfo = typeSetting.createDiv();
+    typeSettingInfo.addClass("setting-item-info");
+    typeSettingInfo.createEl("div", {
+      text: "Preset Type",
+      cls: "setting-item-name"
+    });
+    const typeSettingControl = typeSetting.createDiv();
+    typeSettingControl.addClass("setting-item-control");
+    const folderRadio = typeSettingControl.createEl("input", {
+      type: "radio",
+      attr: {
+        name: "preset-type",
+        id: "preset-type-folder",
+        value: "folder",
+        checked: true
+      }
+    });
+    typeSettingControl.createEl("label", {
+      text: "Folder",
+      attr: {
+        for: "preset-type-folder"
+      }
+    });
+    const tagRadio = typeSettingControl.createEl("input", {
+      type: "radio",
+      attr: {
+        name: "preset-type",
+        id: "preset-type-tag",
+        value: "tag"
+      }
+    });
+    typeSettingControl.createEl("label", {
+      text: "Tag",
+      attr: {
+        for: "preset-type-tag"
+      }
+    });
+    folderRadio.addEventListener("change", () => {
+      if (folderRadio.checked) {
+        this.type = "folder";
+      }
+    });
+    tagRadio.addEventListener("change", () => {
+      if (tagRadio.checked) {
+        this.type = "tag";
+      }
+    });
+    const targetSetting = form.createDiv();
+    targetSetting.addClass("setting-item");
+    const targetSettingInfo = targetSetting.createDiv();
+    targetSettingInfo.addClass("setting-item-info");
+    targetSettingInfo.createEl("div", {
+      text: "Target",
+      cls: "setting-item-name"
+    });
+    targetSettingInfo.createEl("div", {
+      text: "Enter the folder path or tag name",
+      cls: "setting-item-description"
+    });
+    const targetSettingControl = targetSetting.createDiv();
+    targetSettingControl.addClass("setting-item-control");
+    this.targetInput = targetSettingControl.createEl("input", {
+      type: "text",
+      value: "",
+      placeholder: "Enter folder path or tag name"
+    });
+    this.targetInput.addClass("target-input");
+    const footerEl = contentEl.createDiv();
+    footerEl.addClass("modal-button-container");
+    footerEl.createEl("button", {
+      text: "Cancel",
+      cls: "mod-warning",
+      attr: {
+        type: "button"
+      }
+    }).addEventListener("click", () => {
+      this.close();
+    });
+    footerEl.createEl("button", {
+      text: "Save",
+      cls: "mod-cta",
+      attr: {
+        type: "submit"
+      }
+    }).addEventListener("click", (e) => {
+      e.preventDefault();
+      this.save();
+    });
+  }
+  save() {
+    const target = this.targetInput.value.trim();
+    if (target) {
+      this.saveCallback(this.type, target);
+      this.close();
+    }
+  }
+  onClose() {
+    const { contentEl } = this;
+    contentEl.empty();
+  }
+}
+var main = {};
+Object.defineProperty(main, "__esModule", { value: true });
+var obsidian = require$$0;
+const DEFAULT_DAILY_NOTE_FORMAT = "YYYY-MM-DD";
+const DEFAULT_WEEKLY_NOTE_FORMAT = "gggg-[W]ww";
+const DEFAULT_MONTHLY_NOTE_FORMAT = "YYYY-MM";
+const DEFAULT_QUARTERLY_NOTE_FORMAT = "YYYY-[Q]Q";
+const DEFAULT_YEARLY_NOTE_FORMAT = "YYYY";
+function shouldUsePeriodicNotesSettings(periodicity) {
+  var _a, _b;
+  const periodicNotes = window.app.plugins.getPlugin("periodic-notes");
+  return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a[periodicity]) == null ? void 0 : _b.enabled);
+}
+function getDailyNoteSettings() {
+  var _a, _b, _c, _d;
+  try {
+    const { internalPlugins, plugins } = window.app;
+    if (shouldUsePeriodicNotesSettings("daily")) {
+      const { format: format2, folder: folder2, template: template2 } = ((_b = (_a = plugins.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.daily) || {};
+      return {
+        format: format2 || DEFAULT_DAILY_NOTE_FORMAT,
+        folder: (folder2 == null ? void 0 : folder2.trim()) || "",
+        template: (template2 == null ? void 0 : template2.trim()) || ""
+      };
+    }
+    const { folder, format, template } = ((_d = (_c = internalPlugins.getPluginById("daily-notes")) == null ? void 0 : _c.instance) == null ? void 0 : _d.options) || {};
+    return {
+      format: format || DEFAULT_DAILY_NOTE_FORMAT,
+      folder: (folder == null ? void 0 : folder.trim()) || "",
+      template: (template == null ? void 0 : template.trim()) || ""
+    };
+  } catch (err) {
+    console.info("No custom daily note settings found!", err);
+  }
+}
+function getWeeklyNoteSettings() {
+  var _a, _b, _c, _d, _e, _f, _g;
+  try {
+    const pluginManager = window.app.plugins;
+    const calendarSettings = (_a = pluginManager.getPlugin("calendar")) == null ? void 0 : _a.options;
+    const periodicNotesSettings = (_c = (_b = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _b.settings) == null ? void 0 : _c.weekly;
+    if (shouldUsePeriodicNotesSettings("weekly")) {
+      return {
+        format: periodicNotesSettings.format || DEFAULT_WEEKLY_NOTE_FORMAT,
+        folder: ((_d = periodicNotesSettings.folder) == null ? void 0 : _d.trim()) || "",
+        template: ((_e = periodicNotesSettings.template) == null ? void 0 : _e.trim()) || ""
+      };
+    }
+    const settings = calendarSettings || {};
+    return {
+      format: settings.weeklyNoteFormat || DEFAULT_WEEKLY_NOTE_FORMAT,
+      folder: ((_f = settings.weeklyNoteFolder) == null ? void 0 : _f.trim()) || "",
+      template: ((_g = settings.weeklyNoteTemplate) == null ? void 0 : _g.trim()) || ""
+    };
+  } catch (err) {
+    console.info("No custom weekly note settings found!", err);
+  }
+}
+function getMonthlyNoteSettings() {
+  var _a, _b, _c, _d;
+  const pluginManager = window.app.plugins;
+  try {
+    const settings = shouldUsePeriodicNotesSettings("monthly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.monthly) || {};
+    return {
+      format: settings.format || DEFAULT_MONTHLY_NOTE_FORMAT,
+      folder: ((_c = settings.folder) == null ? void 0 : _c.trim()) || "",
+      template: ((_d = settings.template) == null ? void 0 : _d.trim()) || ""
+    };
+  } catch (err) {
+    console.info("No custom monthly note settings found!", err);
+  }
+}
+function getQuarterlyNoteSettings() {
+  var _a, _b, _c, _d;
+  const pluginManager = window.app.plugins;
+  try {
+    const settings = shouldUsePeriodicNotesSettings("quarterly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.quarterly) || {};
+    return {
+      format: settings.format || DEFAULT_QUARTERLY_NOTE_FORMAT,
+      folder: ((_c = settings.folder) == null ? void 0 : _c.trim()) || "",
+      template: ((_d = settings.template) == null ? void 0 : _d.trim()) || ""
+    };
+  } catch (err) {
+    console.info("No custom quarterly note settings found!", err);
+  }
+}
+function getYearlyNoteSettings() {
+  var _a, _b, _c, _d;
+  const pluginManager = window.app.plugins;
+  try {
+    const settings = shouldUsePeriodicNotesSettings("yearly") && ((_b = (_a = pluginManager.getPlugin("periodic-notes")) == null ? void 0 : _a.settings) == null ? void 0 : _b.yearly) || {};
+    return {
+      format: settings.format || DEFAULT_YEARLY_NOTE_FORMAT,
+      folder: ((_c = settings.folder) == null ? void 0 : _c.trim()) || "",
+      template: ((_d = settings.template) == null ? void 0 : _d.trim()) || ""
+    };
+  } catch (err) {
+    console.info("No custom yearly note settings found!", err);
+  }
+}
+function join(...partSegments) {
+  let parts = [];
+  for (let i = 0, l = partSegments.length; i < l; i++) {
+    parts = parts.concat(partSegments[i].split("/"));
+  }
+  const newParts = [];
+  for (let i = 0, l = parts.length; i < l; i++) {
+    const part = parts[i];
+    if (!part || part === ".")
+      continue;
+    else
+      newParts.push(part);
+  }
+  if (parts[0] === "")
+    newParts.unshift("");
+  return newParts.join("/");
+}
+function basename(fullPath) {
+  let base = fullPath.substring(fullPath.lastIndexOf("/") + 1);
+  if (base.lastIndexOf(".") != -1)
+    base = base.substring(0, base.lastIndexOf("."));
+  return base;
+}
+async function ensureFolderExists(path) {
+  const dirs = path.replace(/\\/g, "/").split("/");
+  dirs.pop();
+  if (dirs.length) {
+    const dir = join(...dirs);
+    if (!window.app.vault.getAbstractFileByPath(dir)) {
+      await window.app.vault.createFolder(dir);
+    }
+  }
+}
+async function getNotePath(directory, filename) {
+  if (!filename.endsWith(".md")) {
+    filename += ".md";
+  }
+  const path = obsidian.normalizePath(join(directory, filename));
+  await ensureFolderExists(path);
+  return path;
+}
+async function getTemplateInfo(template) {
+  const { metadataCache, vault } = window.app;
+  const templatePath = obsidian.normalizePath(template);
+  if (templatePath === "/") {
+    return Promise.resolve(["", null]);
+  }
+  try {
+    const templateFile = metadataCache.getFirstLinkpathDest(templatePath, "");
+    const contents = await vault.cachedRead(templateFile);
+    const IFoldInfo = window.app.foldManager.load(templateFile);
+    return [contents, IFoldInfo];
+  } catch (err) {
+    console.error(`Failed to read the daily note template '${templatePath}'`, err);
+    new obsidian.Notice("Failed to read the daily note template");
+    return ["", null];
+  }
+}
+function getDateUID(date, granularity = "day") {
+  const ts = date.clone().startOf(granularity).format();
+  return `${granularity}-${ts}`;
+}
+function removeEscapedCharacters(format) {
+  return format.replace(/\[[^\]]*\]/g, "");
+}
+function isFormatAmbiguous(format, granularity) {
+  if (granularity === "week") {
+    const cleanFormat = removeEscapedCharacters(format);
+    return /w{1,2}/i.test(cleanFormat) && (/M{1,4}/.test(cleanFormat) || /D{1,4}/.test(cleanFormat));
+  }
+  return false;
+}
+function getDateFromFile(file, granularity) {
+  return getDateFromFilename(file.basename, granularity);
+}
+function getDateFromPath(path, granularity) {
+  return getDateFromFilename(basename(path), granularity);
+}
+function getDateFromFilename(filename, granularity) {
+  const getSettings = {
+    day: getDailyNoteSettings,
+    week: getWeeklyNoteSettings,
+    month: getMonthlyNoteSettings,
+    quarter: getQuarterlyNoteSettings,
+    year: getYearlyNoteSettings
+  };
+  const format = getSettings[granularity]().format.split("/").pop();
+  const noteDate = window.moment(filename, format, true);
+  if (!noteDate.isValid()) {
+    return null;
+  }
+  if (isFormatAmbiguous(format, granularity)) {
+    if (granularity === "week") {
+      const cleanFormat = removeEscapedCharacters(format);
+      if (/w{1,2}/i.test(cleanFormat)) {
+        return window.moment(
+          filename,
+          // If format contains week, remove day & month formatting
+          format.replace(/M{1,4}/g, "").replace(/D{1,4}/g, ""),
+          false
+        );
+      }
+    }
+  }
+  return noteDate;
+}
+class DailyNotesFolderMissingError extends Error {
+}
+async function createDailyNote(date) {
+  const app2 = window.app;
+  const { vault } = app2;
+  const moment = window.moment;
+  const { template, format, folder } = getDailyNoteSettings();
+  const [templateContents, IFoldInfo] = await getTemplateInfo(template);
+  const filename = date.format(format);
+  const normalizedPath = await getNotePath(folder, filename);
+  try {
+    const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename).replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+      const now = moment();
+      const currentDate = date.clone().set({
+        hour: now.get("hour"),
+        minute: now.get("minute"),
+        second: now.get("second")
+      });
+      if (calc) {
+        currentDate.add(parseInt(timeDelta, 10), unit);
+      }
+      if (momentFormat) {
+        return currentDate.format(momentFormat.substring(1).trim());
+      }
+      return currentDate.format(format);
+    }).replace(/{{\s*yesterday\s*}}/gi, date.clone().subtract(1, "day").format(format)).replace(/{{\s*tomorrow\s*}}/gi, date.clone().add(1, "d").format(format)));
+    app2.foldManager.save(createdFile, IFoldInfo);
+    return createdFile;
+  } catch (err) {
+    console.error(`Failed to create file: '${normalizedPath}'`, err);
+    new obsidian.Notice("Unable to create new file.");
+  }
+}
+function getDailyNote(date, dailyNotes) {
+  return dailyNotes[getDateUID(date, "day")] ?? null;
+}
+function getAllDailyNotes() {
+  const { vault } = window.app;
+  const { folder } = getDailyNoteSettings();
+  const dailyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+  if (!dailyNotesFolder) {
+    throw new DailyNotesFolderMissingError("Failed to find daily notes folder");
+  }
+  const dailyNotes = {};
+  obsidian.Vault.recurseChildren(dailyNotesFolder, (note) => {
+    if (note instanceof obsidian.TFile) {
+      const date = getDateFromFile(note, "day");
+      if (date) {
+        const dateString = getDateUID(date, "day");
+        dailyNotes[dateString] = note;
+      }
+    }
+  });
+  return dailyNotes;
+}
+class WeeklyNotesFolderMissingError extends Error {
+}
+function getDaysOfWeek() {
+  const { moment } = window;
+  let weekStart = moment.localeData()._week.dow;
+  const daysOfWeek = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday"
+  ];
+  while (weekStart) {
+    daysOfWeek.push(daysOfWeek.shift());
+    weekStart--;
+  }
+  return daysOfWeek;
+}
+function getDayOfWeekNumericalValue(dayOfWeekName) {
+  return getDaysOfWeek().indexOf(dayOfWeekName.toLowerCase());
+}
+async function createWeeklyNote(date) {
+  const { vault } = window.app;
+  const { template, format, folder } = getWeeklyNoteSettings();
+  const [templateContents, IFoldInfo] = await getTemplateInfo(template);
+  const filename = date.format(format);
+  const normalizedPath = await getNotePath(folder, filename);
+  try {
+    const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+      const now = window.moment();
+      const currentDate = date.clone().set({
+        hour: now.get("hour"),
+        minute: now.get("minute"),
+        second: now.get("second")
+      });
+      if (calc) {
+        currentDate.add(parseInt(timeDelta, 10), unit);
+      }
+      if (momentFormat) {
+        return currentDate.format(momentFormat.substring(1).trim());
+      }
+      return currentDate.format(format);
+    }).replace(/{{\s*title\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\s*:(.*?)}}/gi, (_, dayOfWeek, momentFormat) => {
+      const day = getDayOfWeekNumericalValue(dayOfWeek);
+      return date.weekday(day).format(momentFormat.trim());
+    }));
+    window.app.foldManager.save(createdFile, IFoldInfo);
+    return createdFile;
+  } catch (err) {
+    console.error(`Failed to create file: '${normalizedPath}'`, err);
+    new obsidian.Notice("Unable to create new file.");
+  }
+}
+function getWeeklyNote(date, weeklyNotes) {
+  return weeklyNotes[getDateUID(date, "week")] ?? null;
+}
+function getAllWeeklyNotes() {
+  const weeklyNotes = {};
+  if (!appHasWeeklyNotesPluginLoaded()) {
+    return weeklyNotes;
+  }
+  const { vault } = window.app;
+  const { folder } = getWeeklyNoteSettings();
+  const weeklyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+  if (!weeklyNotesFolder) {
+    throw new WeeklyNotesFolderMissingError("Failed to find weekly notes folder");
+  }
+  obsidian.Vault.recurseChildren(weeklyNotesFolder, (note) => {
+    if (note instanceof obsidian.TFile) {
+      const date = getDateFromFile(note, "week");
+      if (date) {
+        const dateString = getDateUID(date, "week");
+        weeklyNotes[dateString] = note;
+      }
+    }
+  });
+  return weeklyNotes;
+}
+class MonthlyNotesFolderMissingError extends Error {
+}
+async function createMonthlyNote(date) {
+  const { vault } = window.app;
+  const { template, format, folder } = getMonthlyNoteSettings();
+  const [templateContents, IFoldInfo] = await getTemplateInfo(template);
+  const filename = date.format(format);
+  const normalizedPath = await getNotePath(folder, filename);
+  try {
+    const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+      const now = window.moment();
+      const currentDate = date.clone().set({
+        hour: now.get("hour"),
+        minute: now.get("minute"),
+        second: now.get("second")
+      });
+      if (calc) {
+        currentDate.add(parseInt(timeDelta, 10), unit);
+      }
+      if (momentFormat) {
+        return currentDate.format(momentFormat.substring(1).trim());
+      }
+      return currentDate.format(format);
+    }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
+    window.app.foldManager.save(createdFile, IFoldInfo);
+    return createdFile;
+  } catch (err) {
+    console.error(`Failed to create file: '${normalizedPath}'`, err);
+    new obsidian.Notice("Unable to create new file.");
+  }
+}
+function getMonthlyNote(date, monthlyNotes) {
+  return monthlyNotes[getDateUID(date, "month")] ?? null;
+}
+function getAllMonthlyNotes() {
+  const monthlyNotes = {};
+  if (!appHasMonthlyNotesPluginLoaded()) {
+    return monthlyNotes;
+  }
+  const { vault } = window.app;
+  const { folder } = getMonthlyNoteSettings();
+  const monthlyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+  if (!monthlyNotesFolder) {
+    throw new MonthlyNotesFolderMissingError("Failed to find monthly notes folder");
+  }
+  obsidian.Vault.recurseChildren(monthlyNotesFolder, (note) => {
+    if (note instanceof obsidian.TFile) {
+      const date = getDateFromFile(note, "month");
+      if (date) {
+        const dateString = getDateUID(date, "month");
+        monthlyNotes[dateString] = note;
+      }
+    }
+  });
+  return monthlyNotes;
+}
+class QuarterlyNotesFolderMissingError extends Error {
+}
+async function createQuarterlyNote(date) {
+  const { vault } = window.app;
+  const { template, format, folder } = getQuarterlyNoteSettings();
+  const [templateContents, IFoldInfo] = await getTemplateInfo(template);
+  const filename = date.format(format);
+  const normalizedPath = await getNotePath(folder, filename);
+  try {
+    const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+      const now = window.moment();
+      const currentDate = date.clone().set({
+        hour: now.get("hour"),
+        minute: now.get("minute"),
+        second: now.get("second")
+      });
+      if (calc) {
+        currentDate.add(parseInt(timeDelta, 10), unit);
+      }
+      if (momentFormat) {
+        return currentDate.format(momentFormat.substring(1).trim());
+      }
+      return currentDate.format(format);
+    }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
+    window.app.foldManager.save(createdFile, IFoldInfo);
+    return createdFile;
+  } catch (err) {
+    console.error(`Failed to create file: '${normalizedPath}'`, err);
+    new obsidian.Notice("Unable to create new file.");
+  }
+}
+function getQuarterlyNote(date, quarterly) {
+  return quarterly[getDateUID(date, "quarter")] ?? null;
+}
+function getAllQuarterlyNotes() {
+  const quarterly = {};
+  if (!appHasQuarterlyNotesPluginLoaded()) {
+    return quarterly;
+  }
+  const { vault } = window.app;
+  const { folder } = getQuarterlyNoteSettings();
+  const quarterlyFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+  if (!quarterlyFolder) {
+    throw new QuarterlyNotesFolderMissingError("Failed to find quarterly notes folder");
+  }
+  obsidian.Vault.recurseChildren(quarterlyFolder, (note) => {
+    if (note instanceof obsidian.TFile) {
+      const date = getDateFromFile(note, "quarter");
+      if (date) {
+        const dateString = getDateUID(date, "quarter");
+        quarterly[dateString] = note;
+      }
+    }
+  });
+  return quarterly;
+}
+class YearlyNotesFolderMissingError extends Error {
+}
+async function createYearlyNote(date) {
+  const { vault } = window.app;
+  const { template, format, folder } = getYearlyNoteSettings();
+  const [templateContents, IFoldInfo] = await getTemplateInfo(template);
+  const filename = date.format(format);
+  const normalizedPath = await getNotePath(folder, filename);
+  try {
+    const createdFile = await vault.create(normalizedPath, templateContents.replace(/{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi, (_, _timeOrDate, calc, timeDelta, unit, momentFormat) => {
+      const now = window.moment();
+      const currentDate = date.clone().set({
+        hour: now.get("hour"),
+        minute: now.get("minute"),
+        second: now.get("second")
+      });
+      if (calc) {
+        currentDate.add(parseInt(timeDelta, 10), unit);
+      }
+      if (momentFormat) {
+        return currentDate.format(momentFormat.substring(1).trim());
+      }
+      return currentDate.format(format);
+    }).replace(/{{\s*date\s*}}/gi, filename).replace(/{{\s*time\s*}}/gi, window.moment().format("HH:mm")).replace(/{{\s*title\s*}}/gi, filename));
+    window.app.foldManager.save(createdFile, IFoldInfo);
+    return createdFile;
+  } catch (err) {
+    console.error(`Failed to create file: '${normalizedPath}'`, err);
+    new obsidian.Notice("Unable to create new file.");
+  }
+}
+function getYearlyNote(date, yearlyNotes) {
+  return yearlyNotes[getDateUID(date, "year")] ?? null;
+}
+function getAllYearlyNotes() {
+  const yearlyNotes = {};
+  if (!appHasYearlyNotesPluginLoaded()) {
+    return yearlyNotes;
+  }
+  const { vault } = window.app;
+  const { folder } = getYearlyNoteSettings();
+  const yearlyNotesFolder = vault.getAbstractFileByPath(obsidian.normalizePath(folder));
+  if (!yearlyNotesFolder) {
+    throw new YearlyNotesFolderMissingError("Failed to find yearly notes folder");
+  }
+  obsidian.Vault.recurseChildren(yearlyNotesFolder, (note) => {
+    if (note instanceof obsidian.TFile) {
+      const date = getDateFromFile(note, "year");
+      if (date) {
+        const dateString = getDateUID(date, "year");
+        yearlyNotes[dateString] = note;
+      }
+    }
+  });
+  return yearlyNotes;
+}
+function appHasDailyNotesPluginLoaded() {
+  var _a, _b;
+  const { app: app2 } = window;
+  const dailyNotesPlugin = app2.internalPlugins.plugins["daily-notes"];
+  if (dailyNotesPlugin && dailyNotesPlugin.enabled) {
+    return true;
+  }
+  const periodicNotes = app2.plugins.getPlugin("periodic-notes");
+  return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.daily) == null ? void 0 : _b.enabled);
+}
+function appHasWeeklyNotesPluginLoaded() {
+  var _a, _b;
+  const { app: app2 } = window;
+  if (app2.plugins.getPlugin("calendar")) {
+    return true;
+  }
+  const periodicNotes = app2.plugins.getPlugin("periodic-notes");
+  return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.weekly) == null ? void 0 : _b.enabled);
+}
+function appHasMonthlyNotesPluginLoaded() {
+  var _a, _b;
+  const { app: app2 } = window;
+  const periodicNotes = app2.plugins.getPlugin("periodic-notes");
+  return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.monthly) == null ? void 0 : _b.enabled);
+}
+function appHasQuarterlyNotesPluginLoaded() {
+  var _a, _b;
+  const { app: app2 } = window;
+  const periodicNotes = app2.plugins.getPlugin("periodic-notes");
+  return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.quarterly) == null ? void 0 : _b.enabled);
+}
+function appHasYearlyNotesPluginLoaded() {
+  var _a, _b;
+  const { app: app2 } = window;
+  const periodicNotes = app2.plugins.getPlugin("periodic-notes");
+  return periodicNotes && ((_b = (_a = periodicNotes.settings) == null ? void 0 : _a.yearly) == null ? void 0 : _b.enabled);
+}
+function getPeriodicNoteSettings(granularity) {
+  const getSettings = {
+    day: getDailyNoteSettings,
+    week: getWeeklyNoteSettings,
+    month: getMonthlyNoteSettings,
+    quarter: getQuarterlyNoteSettings,
+    year: getYearlyNoteSettings
+  }[granularity];
+  return getSettings();
+}
+function createPeriodicNote(granularity, date) {
+  const createFn = {
+    day: createDailyNote,
+    month: createMonthlyNote,
+    week: createWeeklyNote
+  };
+  return createFn[granularity](date);
+}
+var DEFAULT_DAILY_NOTE_FORMAT_1 = main.DEFAULT_DAILY_NOTE_FORMAT = DEFAULT_DAILY_NOTE_FORMAT;
+main.DEFAULT_MONTHLY_NOTE_FORMAT = DEFAULT_MONTHLY_NOTE_FORMAT;
+main.DEFAULT_QUARTERLY_NOTE_FORMAT = DEFAULT_QUARTERLY_NOTE_FORMAT;
+main.DEFAULT_WEEKLY_NOTE_FORMAT = DEFAULT_WEEKLY_NOTE_FORMAT;
+main.DEFAULT_YEARLY_NOTE_FORMAT = DEFAULT_YEARLY_NOTE_FORMAT;
+main.appHasDailyNotesPluginLoaded = appHasDailyNotesPluginLoaded;
+main.appHasMonthlyNotesPluginLoaded = appHasMonthlyNotesPluginLoaded;
+main.appHasQuarterlyNotesPluginLoaded = appHasQuarterlyNotesPluginLoaded;
+main.appHasWeeklyNotesPluginLoaded = appHasWeeklyNotesPluginLoaded;
+main.appHasYearlyNotesPluginLoaded = appHasYearlyNotesPluginLoaded;
+var createDailyNote_1 = main.createDailyNote = createDailyNote;
+main.createMonthlyNote = createMonthlyNote;
+main.createPeriodicNote = createPeriodicNote;
+main.createQuarterlyNote = createQuarterlyNote;
+main.createWeeklyNote = createWeeklyNote;
+main.createYearlyNote = createYearlyNote;
+var getAllDailyNotes_1 = main.getAllDailyNotes = getAllDailyNotes;
+main.getAllMonthlyNotes = getAllMonthlyNotes;
+main.getAllQuarterlyNotes = getAllQuarterlyNotes;
+main.getAllWeeklyNotes = getAllWeeklyNotes;
+main.getAllYearlyNotes = getAllYearlyNotes;
+var getDailyNote_1 = main.getDailyNote = getDailyNote;
+var getDailyNoteSettings_1 = main.getDailyNoteSettings = getDailyNoteSettings;
+var getDateFromFile_1 = main.getDateFromFile = getDateFromFile;
+main.getDateFromPath = getDateFromPath;
+main.getDateUID = getDateUID;
+main.getMonthlyNote = getMonthlyNote;
+main.getMonthlyNoteSettings = getMonthlyNoteSettings;
+main.getPeriodicNoteSettings = getPeriodicNoteSettings;
+main.getQuarterlyNote = getQuarterlyNote;
+main.getQuarterlyNoteSettings = getQuarterlyNoteSettings;
+main.getTemplateInfo = getTemplateInfo;
+main.getWeeklyNote = getWeeklyNote;
+main.getWeeklyNoteSettings = getWeeklyNoteSettings;
+main.getYearlyNote = getYearlyNote;
+main.getYearlyNoteSettings = getYearlyNoteSettings;
+function getEditor(leaf) {
+  if (!leaf) return null;
+  const view2 = leaf.view;
+  if (!(view2 instanceof require$$0.MarkdownView)) return null;
+  return view2.editor;
+}
+function findAdjacentLeaf(app2, currentLeaf, direction) {
+  if (!currentLeaf || !isDailyNoteLeaf(currentLeaf)) return null;
+  const dailyNoteLeaves = [];
+  app2.workspace.iterateAllLeaves((leaf) => {
+    if (isDailyNoteLeaf(leaf)) {
+      dailyNoteLeaves.push(leaf);
+    }
+  });
+  dailyNoteLeaves.sort((a, b) => {
+    const rectA = a.containerEl.getBoundingClientRect();
+    const rectB = b.containerEl.getBoundingClientRect();
+    return rectA.top - rectB.top;
+  });
+  const currentIndex = dailyNoteLeaves.findIndex(
+    (leaf) => leaf === currentLeaf
+  );
+  if (currentIndex === -1) return null;
+  const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+  return targetIndex >= 0 && targetIndex < dailyNoteLeaves.length ? dailyNoteLeaves[targetIndex] : null;
+}
+function navigateToAdjacentLeaf(app2, currentLeaf, direction) {
+  const targetLeaf = findAdjacentLeaf(app2, currentLeaf, direction);
+  if (!targetLeaf) return false;
+  app2.workspace.setActiveLeaf(targetLeaf, { focus: true });
+  const editor = getEditor(targetLeaf);
+  if (!editor) return false;
+  let pos;
+  if (direction === "up") {
+    const lastLine = editor.lastLine();
+    const lastLineLength = editor.getLine(lastLine).length;
+    pos = { line: lastLine, ch: lastLineLength };
+  } else {
+    pos = { line: 0, ch: 0 };
+  }
+  editor.setCursor(pos);
+  editor.scrollIntoView(
+    {
+      from: pos,
+      to: pos
+    },
+    true
+  );
+  setTimeout(() => {
+    if (targetLeaf.view instanceof require$$0.MarkdownView) {
+      if (targetLeaf.view.editMode && targetLeaf.view.editMode.editor) {
+        targetLeaf.view.editMode.editor.focus();
+      } else {
+        editor.focus();
+      }
+    }
+  }, 10);
+  return true;
+}
+function isFrontmatterHidden(plugin) {
+  var _a;
+  return ((_a = plugin.settings) == null ? void 0 : _a.hideFrontmatter) === true;
+}
+function isAtFirstVisibleLine(view2, file, app2, plugin) {
+  var _a, _b;
+  if (!isFrontmatterHidden(plugin)) {
+    const pos2 = view2.state.selection.main.head;
+    const line2 = view2.state.doc.lineAt(pos2);
+    return line2.number === 1 && pos2 === line2.from;
+  }
+  const pos = view2.state.selection.main.head;
+  const line = view2.state.doc.lineAt(pos);
+  const fileCache = app2.metadataCache.getFileCache(file);
+  if (!fileCache || !fileCache.frontmatter) {
+    return line.number === 1 && pos === line.from;
+  }
+  const frontmatterEndLine = (((_b = (_a = fileCache.frontmatterPosition) == null ? void 0 : _a.end) == null ? void 0 : _b.line) ?? 0) + 2;
+  return line.number === frontmatterEndLine && pos === line.from;
+}
+function createUpDownNavigationExtension(options) {
+  const { app: app2, plugin } = options;
+  const keyBindings = [
+    {
+      key: "ArrowUp",
+      run: (view2) => {
+        var _a;
+        if (!view2.state) return false;
+        const infoView = view2.state.field(require$$0.editorInfoField);
+        const currentLeaf = infoView == null ? void 0 : infoView.leaf;
+        const currentFile = (_a = currentLeaf == null ? void 0 : currentLeaf.view) == null ? void 0 : _a.file;
+        if (currentFile && isAtFirstVisibleLine(view2, currentFile, app2, plugin)) {
+          if (currentLeaf && navigateToAdjacentLeaf(app2, currentLeaf, "up")) {
+            return true;
+          }
+        }
+        return false;
+      }
+    },
+    {
+      key: "ArrowDown",
+      run: (view2) => {
+        if (!view2.state) return false;
+        const pos = view2.state.selection.main.head;
+        const line = view2.state.doc.lineAt(pos);
+        const infoView = view2.state.field(require$$0.editorInfoField);
+        const currentLeaf = infoView == null ? void 0 : infoView.leaf;
+        const lastLineNumber = view2.state.doc.lines;
+        if (line.number === lastLineNumber && pos === line.to) {
+          if (currentLeaf && navigateToAdjacentLeaf(app2, currentLeaf, "down")) {
+            return true;
+          }
+        }
+        return false;
+      }
+    }
+  ];
+  return state.Prec.highest(view.keymap.of(keyBindings));
+}
+function noop() {
+}
+function run$1(fn) {
+  return fn();
+}
+function blank_object() {
+  return /* @__PURE__ */ Object.create(null);
+}
+function run_all$1(fns) {
+  fns.forEach(run$1);
+}
+function is_function(thing) {
+  return typeof thing === "function";
+}
+function safe_not_equal(a, b) {
+  return a != a ? b == b : a !== b || a && typeof a === "object" || typeof a === "function";
+}
+function is_empty(obj) {
+  return Object.keys(obj).length === 0;
+}
+function action_destroyer(action_result) {
+  return action_result && is_function(action_result.destroy) ? action_result.destroy : noop;
+}
+function append(target, node) {
+  target.appendChild(node);
+}
+function insert(target, node, anchor) {
+  target.insertBefore(node, anchor || null);
+}
+function detach(node) {
+  if (node.parentNode) {
+    node.parentNode.removeChild(node);
+  }
+}
+function element(name) {
+  return document.createElement(name);
+}
+function svg_element(name) {
+  return document.createElementNS("http://www.w3.org/2000/svg", name);
+}
+function text(data) {
+  return document.createTextNode(data);
+}
+function space() {
+  return text(" ");
+}
+function listen(node, event, handler, options) {
+  node.addEventListener(event, handler, options);
+  return () => node.removeEventListener(event, handler, options);
+}
+function attr(node, attribute, value) {
+  if (value == null) node.removeAttribute(attribute);
+  else if (node.getAttribute(attribute) !== value) node.setAttribute(attribute, value);
+}
+function children(element2) {
+  return Array.from(element2.childNodes);
+}
+function set_data(text2, data) {
+  data = "" + data;
+  if (text2.data === data) return;
+  text2.data = /** @type {string} */
+  data;
+}
+let current_component;
+function set_current_component(component) {
+  current_component = component;
+}
+function get_current_component() {
+  if (!current_component) throw new Error("Function called outside component initialization");
+  return current_component;
+}
+function onMount(fn) {
+  get_current_component().$$.on_mount.push(fn);
+}
+function onDestroy(fn) {
+  get_current_component().$$.on_destroy.push(fn);
+}
+const dirty_components$1 = [];
+const binding_callbacks$1 = [];
+let render_callbacks$1 = [];
+const flush_callbacks$1 = [];
+const resolved_promise$1 = /* @__PURE__ */ Promise.resolve();
+let update_scheduled$1 = false;
+function schedule_update$1() {
+  if (!update_scheduled$1) {
+    update_scheduled$1 = true;
+    resolved_promise$1.then(flush$1);
+  }
+}
+function add_render_callback$1(fn) {
+  render_callbacks$1.push(fn);
+}
+const seen_callbacks$1 = /* @__PURE__ */ new Set();
+let flushidx$1 = 0;
+function flush$1() {
+  if (flushidx$1 !== 0) {
+    return;
+  }
+  const saved_component = current_component;
+  do {
+    try {
+      while (flushidx$1 < dirty_components$1.length) {
+        const component = dirty_components$1[flushidx$1];
+        flushidx$1++;
+        set_current_component(component);
+        update$1(component.$$);
+      }
+    } catch (e) {
+      dirty_components$1.length = 0;
+      flushidx$1 = 0;
+      throw e;
+    }
+    set_current_component(null);
+    dirty_components$1.length = 0;
+    flushidx$1 = 0;
+    while (binding_callbacks$1.length) binding_callbacks$1.pop()();
+    for (let i = 0; i < render_callbacks$1.length; i += 1) {
+      const callback = render_callbacks$1[i];
+      if (!seen_callbacks$1.has(callback)) {
+        seen_callbacks$1.add(callback);
+        callback();
+      }
+    }
+    render_callbacks$1.length = 0;
+  } while (dirty_components$1.length);
+  while (flush_callbacks$1.length) {
+    flush_callbacks$1.pop()();
+  }
+  update_scheduled$1 = false;
+  seen_callbacks$1.clear();
+  set_current_component(saved_component);
+}
+function update$1($$) {
+  if ($$.fragment !== null) {
+    $$.update();
+    run_all$1($$.before_update);
+    const dirty = $$.dirty;
+    $$.dirty = [-1];
+    $$.fragment && $$.fragment.p($$.ctx, dirty);
+    $$.after_update.forEach(add_render_callback$1);
+  }
+}
+function flush_render_callbacks(fns) {
+  const filtered = [];
+  const targets = [];
+  render_callbacks$1.forEach((c) => fns.indexOf(c) === -1 ? filtered.push(c) : targets.push(c));
+  targets.forEach((c) => c());
+  render_callbacks$1 = filtered;
+}
+const outroing = /* @__PURE__ */ new Set();
+let outros;
+function group_outros() {
+  outros = {
+    r: 0,
+    c: [],
+    p: outros
+    // parent group
+  };
+}
+function check_outros() {
+  if (!outros.r) {
+    run_all$1(outros.c);
+  }
+  outros = outros.p;
+}
+function transition_in(block, local) {
+  if (block && block.i) {
+    outroing.delete(block);
+    block.i(local);
+  }
+}
+function transition_out(block, local, detach2, callback) {
+  if (block && block.o) {
+    if (outroing.has(block)) return;
+    outroing.add(block);
+    outros.c.push(() => {
+      outroing.delete(block);
+      if (callback) {
+        if (detach2) block.d(1);
+        callback();
+      }
+    });
+    block.o(local);
+  } else if (callback) {
+    callback();
+  }
+}
+function ensure_array_like(array_like_or_iterator) {
+  return (array_like_or_iterator == null ? void 0 : array_like_or_iterator.length) !== void 0 ? array_like_or_iterator : Array.from(array_like_or_iterator);
+}
+function outro_and_destroy_block(block, lookup) {
+  transition_out(block, 1, 1, () => {
+    lookup.delete(block.key);
+  });
+}
+function update_keyed_each(old_blocks, dirty, get_key, dynamic, ctx, list, lookup, node, destroy, create_each_block2, next, get_context) {
+  let o = old_blocks.length;
+  let n = list.length;
+  let i = o;
+  const old_indexes = {};
+  while (i--) old_indexes[old_blocks[i].key] = i;
+  const new_blocks = [];
+  const new_lookup = /* @__PURE__ */ new Map();
+  const deltas = /* @__PURE__ */ new Map();
+  const updates = [];
+  i = n;
+  while (i--) {
+    const child_ctx = get_context(ctx, list, i);
+    const key = get_key(child_ctx);
+    let block = lookup.get(key);
+    if (!block) {
+      block = create_each_block2(key, child_ctx);
+      block.c();
+    } else {
+      updates.push(() => block.p(child_ctx, dirty));
+    }
+    new_lookup.set(key, new_blocks[i] = block);
+    if (key in old_indexes) deltas.set(key, Math.abs(i - old_indexes[key]));
+  }
+  const will_move = /* @__PURE__ */ new Set();
+  const did_move = /* @__PURE__ */ new Set();
+  function insert2(block) {
+    transition_in(block, 1);
+    block.m(node, next);
+    lookup.set(block.key, block);
+    next = block.first;
+    n--;
+  }
+  while (o && n) {
+    const new_block = new_blocks[n - 1];
+    const old_block = old_blocks[o - 1];
+    const new_key = new_block.key;
+    const old_key = old_block.key;
+    if (new_block === old_block) {
+      next = new_block.first;
+      o--;
+      n--;
+    } else if (!new_lookup.has(old_key)) {
+      destroy(old_block, lookup);
+      o--;
+    } else if (!lookup.has(new_key) || will_move.has(new_key)) {
+      insert2(new_block);
+    } else if (did_move.has(old_key)) {
+      o--;
+    } else if (deltas.get(new_key) > deltas.get(old_key)) {
+      did_move.add(new_key);
+      insert2(new_block);
+    } else {
+      will_move.add(old_key);
+      o--;
+    }
+  }
+  while (o--) {
+    const old_block = old_blocks[o];
+    if (!new_lookup.has(old_block.key)) destroy(old_block, lookup);
+  }
+  while (n) insert2(new_blocks[n - 1]);
+  run_all$1(updates);
+  return new_blocks;
+}
+function create_component(block) {
+  block && block.c();
+}
+function mount_component(component, target, anchor) {
+  const { fragment, after_update } = component.$$;
+  fragment && fragment.m(target, anchor);
+  add_render_callback$1(() => {
+    const new_on_destroy = component.$$.on_mount.map(run$1).filter(is_function);
+    if (component.$$.on_destroy) {
+      component.$$.on_destroy.push(...new_on_destroy);
+    } else {
+      run_all$1(new_on_destroy);
+    }
+    component.$$.on_mount = [];
+  });
+  after_update.forEach(add_render_callback$1);
+}
+function destroy_component(component, detaching) {
+  const $$ = component.$$;
+  if ($$.fragment !== null) {
+    flush_render_callbacks($$.after_update);
+    run_all$1($$.on_destroy);
+    $$.fragment && $$.fragment.d(detaching);
+    $$.on_destroy = $$.fragment = null;
+    $$.ctx = [];
+  }
+}
+function make_dirty(component, i) {
+  if (component.$$.dirty[0] === -1) {
+    dirty_components$1.push(component);
+    schedule_update$1();
+    component.$$.dirty.fill(0);
+  }
+  component.$$.dirty[i / 31 | 0] |= 1 << i % 31;
+}
+function init(component, options, instance2, create_fragment2, not_equal, props, append_styles = null, dirty = [-1]) {
+  const parent_component = current_component;
+  set_current_component(component);
+  const $$ = component.$$ = {
+    fragment: null,
+    ctx: [],
+    // state
+    props,
+    update: noop,
+    not_equal,
+    bound: blank_object(),
+    // lifecycle
+    on_mount: [],
+    on_destroy: [],
+    on_disconnect: [],
+    before_update: [],
+    after_update: [],
+    context: new Map(options.context || (parent_component ? parent_component.$$.context : [])),
+    // everything else
+    callbacks: blank_object(),
+    dirty,
+    skip_bound: false,
+    root: options.target || parent_component.$$.root
+  };
+  append_styles && append_styles($$.root);
+  let ready = false;
+  $$.ctx = instance2 ? instance2(component, options.props || {}, (i, ret, ...rest) => {
+    const value = rest.length ? rest[0] : ret;
+    if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
+      if (!$$.skip_bound && $$.bound[i]) $$.bound[i](value);
+      if (ready) make_dirty(component, i);
+    }
+    return ret;
+  }) : [];
+  $$.update();
+  ready = true;
+  run_all$1($$.before_update);
+  $$.fragment = create_fragment2 ? create_fragment2($$.ctx) : false;
+  if (options.target) {
+    if (options.hydrate) {
+      const nodes = children(options.target);
+      $$.fragment && $$.fragment.l(nodes);
+      nodes.forEach(detach);
+    } else {
+      $$.fragment && $$.fragment.c();
+    }
+    if (options.intro) transition_in(component.$$.fragment);
+    mount_component(component, options.target, options.anchor);
+    flush$1();
+  }
+  set_current_component(parent_component);
+}
+class SvelteComponent {
+  constructor() {
+    /**
+     * ### PRIVATE API
+     *
+     * Do not use, may change at any time
+     *
+     * @type {any}
+     */
+    __publicField(this, "$$");
+    /**
+     * ### PRIVATE API
+     *
+     * Do not use, may change at any time
+     *
+     * @type {any}
+     */
+    __publicField(this, "$$set");
+  }
+  /** @returns {void} */
+  $destroy() {
+    destroy_component(this, 1);
+    this.$destroy = noop;
+  }
+  /**
+   * @template {Extract<keyof Events, string>} K
+   * @param {K} type
+   * @param {((e: Events[K]) => void) | null | undefined} callback
+   * @returns {() => void}
+   */
+  $on(type, callback) {
+    if (!is_function(callback)) {
+      return noop;
+    }
+    const callbacks = this.$$.callbacks[type] || (this.$$.callbacks[type] = []);
+    callbacks.push(callback);
+    return () => {
+      const index = callbacks.indexOf(callback);
+      if (index !== -1) callbacks.splice(index, 1);
+    };
+  }
+  /**
+   * @param {Partial<Props>} props
+   * @returns {void}
+   */
+  $set(props) {
+    if (this.$$set && !is_empty(props)) {
+      this.$$.skip_bound = true;
+      this.$$set(props);
+      this.$$.skip_bound = false;
+    }
+  }
+}
+const PUBLIC_VERSION = "4";
+if (typeof window !== "undefined")
+  (window.__svelte || (window.__svelte = { v: /* @__PURE__ */ new Set() })).v.add(PUBLIC_VERSION);
+function __awaiter(thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function(resolve) {
+      resolve(value);
+    });
+  }
+  return new (P || (P = Promise))(function(resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+    step((generator = generator.apply(thisArg, [])).next());
+  });
+}
+function create_if_block_2$1(ctx) {
+  let div;
+  let span0;
+  let svg;
+  let path;
+  let span0_title_value;
+  let t0;
+  let span1;
+  let t1;
+  let mounted;
+  let dispose;
+  return {
+    c() {
+      div = element("div");
+      span0 = element("span");
+      svg = svg_element("svg");
+      path = svg_element("path");
+      t0 = space();
+      span1 = element("span");
+      t1 = text(
+        /*title*/
+        ctx[5]
+      );
+      attr(path, "d", "m6 9 6 6 6-6");
+      attr(svg, "xmlns", "http://www.w3.org/2000/svg");
+      attr(svg, "width", "24");
+      attr(svg, "height", "24");
+      attr(svg, "viewBox", "0 0 24 24");
+      attr(svg, "fill", "none");
+      attr(svg, "stroke", "currentColor");
+      attr(svg, "stroke-width", "2");
+      attr(svg, "stroke-linecap", "round");
+      attr(svg, "stroke-linejoin", "round");
+      attr(svg, "class", "lucide lucide-chevron-down");
+      attr(span0, "role", "button");
+      attr(
+        span0,
+        "data-collapsed",
+        /*isCollapsed*/
+        ctx[7]
+      );
+      attr(span0, "class", "collapse-button svelte-1cwbjlj");
+      attr(span0, "title", span0_title_value = /*isCollapsed*/
+      ctx[7] ? "Expand" : "Collapse");
+      attr(span1, "role", "link");
+      attr(span1, "class", "clickable-link svelte-1cwbjlj");
+      attr(
+        span1,
+        "data-title",
+        /*title*/
+        ctx[5]
+      );
+      attr(div, "class", "daily-note-title inline-title svelte-1cwbjlj");
+    },
+    m(target, anchor) {
+      insert(target, div, anchor);
+      append(div, span0);
+      append(span0, svg);
+      append(svg, path);
+      append(div, t0);
+      append(div, span1);
+      append(span1, t1);
+      if (!mounted) {
+        dispose = [
+          listen(
+            span0,
+            "click",
+            /*toggleCollapse*/
+            ctx[10]
+          ),
+          listen(
+            span1,
+            "click",
+            /*handleFileIconClick*/
+            ctx[8]
+          )
+        ];
+        mounted = true;
+      }
+    },
+    p(ctx2, dirty) {
+      if (dirty & /*isCollapsed*/
+      128) {
+        attr(
+          span0,
+          "data-collapsed",
+          /*isCollapsed*/
+          ctx2[7]
+        );
+      }
+      if (dirty & /*isCollapsed*/
+      128 && span0_title_value !== (span0_title_value = /*isCollapsed*/
+      ctx2[7] ? "Expand" : "Collapse")) {
+        attr(span0, "title", span0_title_value);
+      }
+      if (dirty & /*title*/
+      32) set_data(
+        t1,
+        /*title*/
+        ctx2[5]
+      );
+      if (dirty & /*title*/
+      32) {
+        attr(
+          span1,
+          "data-title",
+          /*title*/
+          ctx2[5]
+        );
+      }
+    },
+    d(detaching) {
+      if (detaching) {
+        detach(div);
+      }
+      mounted = false;
+      run_all$1(dispose);
+    }
+  };
+}
+function create_if_block_1$1(ctx) {
+  let div;
+  return {
+    c() {
+      div = element("div");
+      div.textContent = "Loading...";
+      attr(div, "class", "editor-placeholder svelte-1cwbjlj");
+    },
+    m(target, anchor) {
+      insert(target, div, anchor);
+    },
+    d(detaching) {
+      if (detaching) {
+        detach(div);
+      }
+    }
+  };
+}
+function create_if_block$1(ctx) {
+  let div;
+  return {
+    c() {
+      div = element("div");
+      div.textContent = "Scroll to view content";
+      attr(div, "class", "editor-placeholder svelte-1cwbjlj");
+    },
+    m(target, anchor) {
+      insert(target, div, anchor);
+    },
+    d(detaching) {
+      if (detaching) {
+        detach(div);
+      }
+    }
+  };
+}
+function create_fragment$1(ctx) {
+  let div2;
+  let div1;
+  let t0;
+  let div0;
+  let t1;
+  let div2_data_id_value;
+  let mounted;
+  let dispose;
+  let if_block0 = (
+    /*title*/
+    ctx[5] && create_if_block_2$1(ctx)
+  );
+  let if_block1 = !/*rendered*/
+  ctx[3] && /*shouldRender*/
+  ctx[1] && create_if_block_1$1();
+  let if_block2 = !/*shouldRender*/
+  ctx[1] && !/*rendered*/
+  ctx[3] && create_if_block$1();
+  return {
+    c() {
+      div2 = element("div");
+      div1 = element("div");
+      if (if_block0) if_block0.c();
+      t0 = space();
+      div0 = element("div");
+      if (if_block1) if_block1.c();
+      t1 = space();
+      if (if_block2) if_block2.c();
+      attr(div0, "class", "daily-note-editor svelte-1cwbjlj");
+      attr(
+        div0,
+        "data-collapsed",
+        /*isCollapsed*/
+        ctx[7]
+      );
+      attr(div0, "aria-hidden", "true");
+      attr(
+        div0,
+        "data-title",
+        /*rawTitle*/
+        ctx[6]
+      );
+      attr(div1, "class", "daily-note svelte-1cwbjlj");
+      attr(div2, "class", "daily-note-container");
+      attr(div2, "data-id", div2_data_id_value = "dn-editor-" + /*file*/
+      ctx[0].path);
+    },
+    m(target, anchor) {
+      insert(target, div2, anchor);
+      append(div2, div1);
+      if (if_block0) if_block0.m(div1, null);
+      append(div1, t0);
+      append(div1, div0);
+      if (if_block1) if_block1.m(div0, null);
+      append(div0, t1);
+      if (if_block2) if_block2.m(div0, null);
+      ctx[14](div0);
+      ctx[15](div2);
+      if (!mounted) {
+        dispose = listen(
+          div0,
+          "click",
+          /*handleEditorClick*/
+          ctx[9]
+        );
+        mounted = true;
+      }
+    },
+    p(ctx2, [dirty]) {
+      if (
+        /*title*/
+        ctx2[5]
+      ) {
+        if (if_block0) {
+          if_block0.p(ctx2, dirty);
+        } else {
+          if_block0 = create_if_block_2$1(ctx2);
+          if_block0.c();
+          if_block0.m(div1, t0);
+        }
+      } else if (if_block0) {
+        if_block0.d(1);
+        if_block0 = null;
+      }
+      if (!/*rendered*/
+      ctx2[3] && /*shouldRender*/
+      ctx2[1]) {
+        if (if_block1) ;
+        else {
+          if_block1 = create_if_block_1$1();
+          if_block1.c();
+          if_block1.m(div0, t1);
+        }
+      } else if (if_block1) {
+        if_block1.d(1);
+        if_block1 = null;
+      }
+      if (!/*shouldRender*/
+      ctx2[1] && !/*rendered*/
+      ctx2[3]) {
+        if (if_block2) ;
+        else {
+          if_block2 = create_if_block$1();
+          if_block2.c();
+          if_block2.m(div0, null);
+        }
+      } else if (if_block2) {
+        if_block2.d(1);
+        if_block2 = null;
+      }
+      if (dirty & /*isCollapsed*/
+      128) {
+        attr(
+          div0,
+          "data-collapsed",
+          /*isCollapsed*/
+          ctx2[7]
+        );
+      }
+      if (dirty & /*rawTitle*/
+      64) {
+        attr(
+          div0,
+          "data-title",
+          /*rawTitle*/
+          ctx2[6]
+        );
+      }
+      if (dirty & /*file*/
+      1 && div2_data_id_value !== (div2_data_id_value = "dn-editor-" + /*file*/
+      ctx2[0].path)) {
+        attr(div2, "data-id", div2_data_id_value);
+      }
+    },
+    i: noop,
+    o: noop,
+    d(detaching) {
+      if (detaching) {
+        detach(div2);
+      }
+      if (if_block0) if_block0.d();
+      if (if_block1) if_block1.d();
+      if (if_block2) if_block2.d();
+      ctx[14](null);
+      ctx[15](null);
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function fileHasBacklinks(app2, file) {
+  const resolvedLinks = app2.metadataCache.resolvedLinks;
+  for (const sourcePath in resolvedLinks) {
+    if (sourcePath === file.path) continue;
+    if (file.path in resolvedLinks[sourcePath]) {
+      return true;
+    }
+  }
+  return false;
+}
+function instance$1($$self, $$props, $$invalidate) {
+  let { file } = $$props;
+  let { plugin } = $$props;
+  let { leaf } = $$props;
+  let { shouldRender = true } = $$props;
+  let { autoFocus = false } = $$props;
+  let editorEl;
+  let containerEl;
+  let title;
+  let rawTitle;
+  let rendered = false;
+  let createdLeaf;
+  let isDestroying = false;
+  let isCollapsed = false;
+  onMount(() => {
+    if (file instanceof require$$0.TFile) {
+      const basename2 = file.basename;
+      $$invalidate(6, rawTitle = basename2);
+      const dateFormat = getDailyNoteSettings_1().format || DEFAULT_DAILY_NOTE_FORMAT_1;
+      const parsed = require$$0.moment(basename2, dateFormat, true);
+      $$invalidate(5, title = parsed.isValid() ? parsed.format("dddd, MMMM Do YYYY") : basename2);
+    }
+  });
+  onDestroy(() => {
+    isDestroying = true;
+    if (rendered && createdLeaf) {
+      try {
+        if (createdLeaf.detach) createdLeaf.detach();
+        if (editorEl) editorEl.empty();
+      } catch (e) {
+        console.error("Error cleaning up editor:", e);
+      }
+    }
+  });
+  function showEditor() {
+    if (!(file instanceof require$$0.TFile)) return;
+    if (rendered) return;
+    if (isDestroying) return;
+    try {
+      [createdLeaf] = spawnLeafView(plugin, editorEl, leaf);
+      createdLeaf.setPinned(true);
+      const showBacklinks = !plugin.settings.hideBacklinks && fileHasBacklinks(plugin.app, file);
+      createdLeaf.setViewState({
+        type: "markdown",
+        state: {
+          file: file.path,
+          mode: "source",
+          source: false,
+          backlinks: showBacklinks,
+          backlinkOpts: {
+            collapseAll: false,
+            extraContext: false,
+            sortOrder: "alphabetical",
+            showSearch: false,
+            searchQuery: "",
+            backlinkCollapsed: false,
+            unlinkedCollapsed: true
+          }
+        }
+      });
+      createdLeaf.parentLeaf = leaf;
+      $$invalidate(3, rendered = true);
+      if (autoFocus) {
+        window.setTimeout(
+          () => {
+            if ((createdLeaf === null || createdLeaf === void 0 ? void 0 : createdLeaf.view) instanceof require$$0.MarkdownView) {
+              const editor = createdLeaf.view.editor;
+              editor.focus();
+              editor.setCursor(editor.lineCount(), 0);
+            }
+          },
+          400
+        );
+      }
+    } catch (error) {
+      console.error("Error creating leaf view:", error);
+    }
+  }
+  function handleFileIconClick() {
+    if (!(file instanceof require$$0.TFile)) return;
+    if (leaf && !(leaf === null || leaf === void 0 ? void 0 : leaf.pinned)) {
+      leaf.openFile(file);
+    } else plugin.app.workspace.getLeaf(false).openFile(file);
+  }
+  function handleEditorClick() {
+    var _a, _b;
+    const editor = (_b = (_a = createdLeaf === null || createdLeaf === void 0 ? void 0 : createdLeaf.view) === null || _a === void 0 ? void 0 : _a.editMode) === null || _b === void 0 ? void 0 : _b.editor;
+    if (editor && !editor.hasFocus()) {
+      editor.focus();
+    }
+  }
+  function toggleCollapse() {
+    $$invalidate(7, isCollapsed = !isCollapsed);
+  }
+  function div0_binding($$value) {
+    binding_callbacks$1[$$value ? "unshift" : "push"](() => {
+      editorEl = $$value;
+      $$invalidate(2, editorEl);
+    });
+  }
+  function div2_binding($$value) {
+    binding_callbacks$1[$$value ? "unshift" : "push"](() => {
+      containerEl = $$value;
+      $$invalidate(4, containerEl);
+    });
+  }
+  $$self.$$set = ($$props2) => {
+    if ("file" in $$props2) $$invalidate(0, file = $$props2.file);
+    if ("plugin" in $$props2) $$invalidate(11, plugin = $$props2.plugin);
+    if ("leaf" in $$props2) $$invalidate(12, leaf = $$props2.leaf);
+    if ("shouldRender" in $$props2) $$invalidate(1, shouldRender = $$props2.shouldRender);
+    if ("autoFocus" in $$props2) $$invalidate(13, autoFocus = $$props2.autoFocus);
+  };
+  $$self.$$.update = () => {
+    if ($$self.$$.dirty & /*editorEl, shouldRender, rendered*/
+    14) {
+      if (editorEl && shouldRender && !rendered) {
+        showEditor();
+      }
+    }
+  };
+  return [
+    file,
+    shouldRender,
+    editorEl,
+    rendered,
+    containerEl,
+    title,
+    rawTitle,
+    isCollapsed,
+    handleFileIconClick,
+    handleEditorClick,
+    toggleCollapse,
+    plugin,
+    leaf,
+    autoFocus,
+    div0_binding,
+    div2_binding
+  ];
+}
+class DailyNote extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, instance$1, create_fragment$1, safe_not_equal, {
+      file: 0,
+      plugin: 11,
+      leaf: 12,
+      shouldRender: 1,
+      autoFocus: 13
+    });
+  }
+}
+function run(fn) {
+  return fn();
+}
+function run_all(fns) {
+  fns.forEach(run);
+}
+const dirty_components = [];
+const binding_callbacks = [];
+const render_callbacks = [];
+const flush_callbacks = [];
+const resolved_promise = Promise.resolve();
+let update_scheduled = false;
+function schedule_update() {
+  if (!update_scheduled) {
+    update_scheduled = true;
+    resolved_promise.then(flush);
+  }
+}
+function tick() {
+  schedule_update();
+  return resolved_promise;
+}
+function add_render_callback(fn) {
+  render_callbacks.push(fn);
+}
+const seen_callbacks = /* @__PURE__ */ new Set();
+let flushidx = 0;
+function flush() {
+  do {
+    while (flushidx < dirty_components.length) {
+      const component = dirty_components[flushidx];
+      flushidx++;
+      update(component.$$);
+    }
+    dirty_components.length = 0;
+    flushidx = 0;
+    while (binding_callbacks.length)
+      binding_callbacks.pop()();
+    for (let i = 0; i < render_callbacks.length; i += 1) {
+      const callback = render_callbacks[i];
+      if (!seen_callbacks.has(callback)) {
+        seen_callbacks.add(callback);
+        callback();
+      }
+    }
+    render_callbacks.length = 0;
+  } while (dirty_components.length);
+  while (flush_callbacks.length) {
+    flush_callbacks.pop()();
+  }
+  update_scheduled = false;
+  seen_callbacks.clear();
+}
+function update($$) {
+  if ($$.fragment !== null) {
+    $$.update();
+    run_all($$.before_update);
+    const dirty = $$.dirty;
+    $$.dirty = [-1];
+    $$.fragment && $$.fragment.p($$.ctx, dirty);
+    $$.after_update.forEach(add_render_callback);
+  }
+}
+const defaultOptions = {
+  root: null,
+  rootMargin: "0px",
+  threshold: 0,
+  unobserveOnEnter: false
+};
+const createEvent = (name, detail) => new CustomEvent(name, { detail });
+function inview(node, options = {}) {
+  const { root, rootMargin, threshold, unobserveOnEnter } = Object.assign(Object.assign({}, defaultOptions), options);
+  let prevPos = {
+    x: void 0,
+    y: void 0
+  };
+  let scrollDirection = {
+    vertical: void 0,
+    horizontal: void 0
+  };
+  if (typeof IntersectionObserver !== "undefined" && node) {
+    const observer = new IntersectionObserver((entries, _observer) => {
+      entries.forEach((singleEntry) => {
+        if (prevPos.y > singleEntry.boundingClientRect.y) {
+          scrollDirection.vertical = "up";
+        } else {
+          scrollDirection.vertical = "down";
+        }
+        if (prevPos.x > singleEntry.boundingClientRect.x) {
+          scrollDirection.horizontal = "left";
+        } else {
+          scrollDirection.horizontal = "right";
+        }
+        prevPos = {
+          y: singleEntry.boundingClientRect.y,
+          x: singleEntry.boundingClientRect.x
+        };
+        const detail = {
+          inView: singleEntry.isIntersecting,
+          entry: singleEntry,
+          scrollDirection,
+          node,
+          observer: _observer
+        };
+        node.dispatchEvent(createEvent("inview_change", detail));
+        node.dispatchEvent(createEvent("change", detail));
+        if (singleEntry.isIntersecting) {
+          node.dispatchEvent(createEvent("inview_enter", detail));
+          node.dispatchEvent(createEvent("enter", detail));
+          unobserveOnEnter && _observer.unobserve(node);
+        } else {
+          node.dispatchEvent(createEvent("inview_leave", detail));
+          node.dispatchEvent(createEvent("leave", detail));
+        }
+      });
+    }, {
+      root,
+      rootMargin,
+      threshold
+    });
+    tick().then(() => {
+      node.dispatchEvent(createEvent("inview_init", { observer, node }));
+      node.dispatchEvent(
+        //@ts-expect-error only for backward compatibility
+        createEvent("init", { observer, node })
+      );
+    });
+    observer.observe(node);
+    return {
+      destroy() {
+        observer.unobserve(node);
+      }
+    };
+  }
+}
+class FileManager {
+  constructor(options) {
+    this.allFiles = [];
+    this.filteredFiles = [];
+    this.hasFetched = false;
+    this.hasCurrentDay = true;
+    this.cacheDailyNotes = {};
+    this.options = options;
+    this.fetchFiles();
+  }
+  /**
+   * Helper method to parse time field and check if it's reverse
+   * @param timeField The time field to parse
+   * @returns An object containing isReverse flag and baseTimeField
+   */
+  parseTimeField(timeField) {
+    const field = timeField || "mtime";
+    const isReverse = field.endsWith("Reverse");
+    const baseTimeField = isReverse ? field.replace("Reverse", "") : field;
+    return { isReverse, baseTimeField };
+  }
+  /**
+   * Helper method to sort files by time field
+   * @param files The files to sort
+   * @param timeField The time field to sort by
+   * @returns Sorted files
+   */
+  sortFilesByTimeField(files, timeField) {
+    const { isReverse, baseTimeField } = this.parseTimeField(timeField);
+    return [...files].sort((a, b) => {
+      if (baseTimeField === "name") {
+        if (isReverse) {
+          return b.name.localeCompare(a.name);
+        }
+        return a.name.localeCompare(b.name);
+      }
+      if (isReverse) {
+        return a.stat[baseTimeField] - b.stat[baseTimeField];
+      }
+      return b.stat[baseTimeField] - a.stat[baseTimeField];
+    });
+  }
+  fetchFiles() {
+    if (this.hasFetched) return;
+    switch (this.options.mode) {
+      case "daily":
+        this.fetchDailyNotes();
+        break;
+      case "folder":
+        this.fetchFolderFiles();
+        break;
+      case "tag":
+        this.fetchTaggedFiles();
+        break;
+    }
+    this.hasFetched = true;
+    this.checkDailyNote();
+    this.filterFilesByRange();
+  }
+  fetchDailyNotes() {
+    this.cacheDailyNotes = getAllDailyNotes_1();
+    const notes = Object.values(this.cacheDailyNotes);
+    const { isReverse, baseTimeField } = this.parseTimeField(
+      this.options.timeField
+    );
+    if (baseTimeField === "name") {
+      this.allFiles = [...notes].sort((a, b) => {
+        const result = a.name.localeCompare(b.name);
+        return isReverse ? -result : result;
+      });
+    } else {
+      const today = require$$0.moment().startOf("day");
+      const dateKeys = Object.keys(this.cacheDailyNotes).sort().reverse();
+      const filteredKeys = this.options.hideUnreachedDates ? dateKeys.filter((date) => require$$0.moment(date, "YYYY-MM-DD").isSameOrBefore(today)) : dateKeys;
+      for (const dateStr of filteredKeys) {
+        this.allFiles.push(this.cacheDailyNotes[dateStr]);
+      }
+      if (baseTimeField !== "ctime" && baseTimeField !== "mtime") {
+        this.allFiles = this.sortFilesByTimeField(
+          this.allFiles,
+          this.options.timeField
+        );
+      }
+    }
+  }
+  fetchFolderFiles() {
+    if (!this.options.target || !this.options.app) return;
+    const allFiles = this.options.app.vault.getMarkdownFiles();
+    this.allFiles = allFiles.filter((file) => {
+      var _a;
+      const folderPath = ((_a = file.parent) == null ? void 0 : _a.path) || "";
+      return folderPath === this.options.target || folderPath.startsWith(this.options.target + "/");
+    });
+    this.allFiles = this.sortFilesByTimeField(
+      this.allFiles,
+      this.options.timeField
+    );
+  }
+  fetchTaggedFiles() {
+    if (!this.options.target || !this.options.app) return;
+    const allFiles = this.options.app.vault.getMarkdownFiles();
+    const targetTag = this.options.target.startsWith("#") ? this.options.target : "#" + this.options.target;
+    this.allFiles = allFiles.filter((file) => {
+      var _a;
+      const fileCache = (_a = this.options.app) == null ? void 0 : _a.metadataCache.getFileCache(file);
+      if (!fileCache || !fileCache.tags) return false;
+      return fileCache.tags.some((tag) => tag.tag === targetTag);
+    });
+    this.allFiles = this.sortFilesByTimeField(
+      this.allFiles,
+      this.options.timeField
+    );
+  }
+  filterFilesByRange() {
+    if (!this.options.timeRange) {
+      this.filteredFiles = [...this.allFiles];
+      return this.filteredFiles;
+    }
+    this.filteredFiles = [];
+    if (this.options.timeRange === "all") {
+      this.filteredFiles = [...this.allFiles];
+      return this.filteredFiles;
+    }
+    if (this.options.mode === "daily") {
+      this.filterDailyNotesByRange();
+    } else {
+      this.filterFilesByTimeRange();
+    }
+    return this.filteredFiles;
+  }
+  /**
+   * Filter files by time range
+   * Applicable to folder and tag modes
+   */
+  filterFilesByTimeRange() {
+    const now = require$$0.moment();
+    const { isReverse, baseTimeField } = this.parseTimeField(
+      this.options.timeField
+    );
+    this.filteredFiles = this.allFiles.filter((file) => {
+      const fileDate = require$$0.moment(file.stat[baseTimeField]);
+      return this.isDateInRange(fileDate, now);
+    });
+    if (isReverse) {
+      this.filteredFiles.reverse();
+    }
+  }
+  /**
+   * Filter daily notes by date
+   * Applicable to daily mode
+   */
+  filterDailyNotesByRange() {
+    const now = require$$0.moment();
+    const fileFormat = getDailyNoteSettings_1().format || DEFAULT_DAILY_NOTE_FORMAT_1;
+    this.filteredFiles = this.allFiles.filter((file) => {
+      const fileDate = require$$0.moment(file.basename, fileFormat);
+      return this.isDateInRange(fileDate, now);
+    });
+  }
+  /**
+   * Check if the file date is in the range
+   * @param fileDate file date
+   * @param now current date
+   * @returns whether in the range
+   */
+  isDateInRange(fileDate, now) {
+    switch (this.options.timeRange) {
+      case "week":
+        return fileDate.isSame(now, "week");
+      case "month":
+        return fileDate.isSame(now, "month");
+      case "year":
+        return fileDate.isSame(now, "year");
+      case "last-week":
+        return fileDate.isBetween(
+          require$$0.moment().subtract(1, "week").startOf("week"),
+          require$$0.moment().subtract(1, "week").endOf("week"),
+          null,
+          "[]"
+        );
+      case "last-month":
+        return fileDate.isBetween(
+          require$$0.moment().subtract(1, "month").startOf("month"),
+          require$$0.moment().subtract(1, "month").endOf("month"),
+          null,
+          "[]"
+        );
+      case "last-year":
+        return fileDate.isBetween(
+          require$$0.moment().subtract(1, "year").startOf("year"),
+          require$$0.moment().subtract(1, "year").endOf("year"),
+          null,
+          "[]"
+        );
+      case "quarter":
+        return fileDate.isSame(now, "quarter");
+      case "last-quarter":
+        return fileDate.isBetween(
+          require$$0.moment().subtract(1, "quarter").startOf("quarter"),
+          require$$0.moment().subtract(1, "quarter").endOf("quarter"),
+          null,
+          "[]"
+        );
+      case "custom":
+        if (this.options.customRange) {
+          const startDate = require$$0.moment(this.options.customRange.start);
+          const endDate = require$$0.moment(this.options.customRange.end);
+          return fileDate.isBetween(startDate, endDate, null, "[]");
+        }
+        return false;
+      default:
+        return true;
+    }
+  }
+  checkDailyNote() {
+    if (this.options.mode !== "daily") {
+      this.hasCurrentDay = true;
+      return true;
+    }
+    this.cacheDailyNotes = getAllDailyNotes_1();
+    const currentDate = require$$0.moment();
+    const currentDailyNote = getDailyNote_1(
+      currentDate,
+      this.cacheDailyNotes
+    );
+    if (!currentDailyNote) {
+      this.hasCurrentDay = false;
+      return false;
+    }
+    if (this.hasCurrentDay === false) {
+      this.allFiles = [];
+      this.fetchDailyNotes();
+      this.filterFilesByRange();
+    }
+    this.hasCurrentDay = true;
+    return true;
+  }
+  async createNewDailyNote() {
+    if (this.options.mode !== "daily" || this.hasCurrentDay) {
+      return null;
+    }
+    const currentDate = require$$0.moment();
+    const currentDailyNote = await createDailyNote_1(currentDate);
+    if (currentDailyNote) {
+      this.allFiles.push(currentDailyNote);
+      this.allFiles = this.sortDailyNotes(this.allFiles);
+      this.hasCurrentDay = true;
+      this.filterFilesByRange();
+      return currentDailyNote;
+    }
+    return null;
+  }
+  fileCreate(file) {
+    if (this.options.mode === "daily") {
+      this.handleDailyNoteCreate(file);
+    } else if (this.options.mode === "folder") {
+      this.handleFolderFileCreate(file);
+    } else if (this.options.mode === "tag") {
+      this.handleTaggedFileCreate(file);
+    }
+  }
+  handleDailyNoteCreate(file) {
+    const fileDate = getDateFromFile_1(file, "day");
+    const fileFormat = getDailyNoteSettings_1().format || DEFAULT_DAILY_NOTE_FORMAT_1;
+    if (!fileDate) return;
+    if (this.filteredFiles.length === 0) {
+      this.allFiles.push(file);
+      this.allFiles = this.sortDailyNotes(this.allFiles);
+      this.filterFilesByRange();
+      return;
+    }
+    const lastFilteredFile = this.filteredFiles[this.filteredFiles.length - 1];
+    const firstFilteredFile = this.filteredFiles[0];
+    const lastFilteredFileDate = require$$0.moment(
+      lastFilteredFile.basename,
+      fileFormat
+    );
+    const firstFilteredFileDate = require$$0.moment(
+      firstFilteredFile.basename,
+      fileFormat
+    );
+    if (fileDate.isBetween(lastFilteredFileDate, firstFilteredFileDate)) {
+      this.filteredFiles.push(file);
+      this.filteredFiles = this.sortDailyNotes(this.filteredFiles);
+    } else if (fileDate.isBefore(lastFilteredFileDate)) {
+      this.allFiles.push(file);
+      this.allFiles = this.sortDailyNotes(this.allFiles);
+      this.filterFilesByRange();
+    } else if (fileDate.isAfter(firstFilteredFileDate)) {
+      this.filteredFiles.push(file);
+      this.filteredFiles = this.sortDailyNotes(this.filteredFiles);
+    }
+    if (fileDate.isSame(require$$0.moment(), "day")) this.hasCurrentDay = true;
+  }
+  handleFolderFileCreate(file) {
+    var _a;
+    if (!this.options.target) return;
+    const folderPath = ((_a = file.parent) == null ? void 0 : _a.path) || "";
+    if (folderPath === this.options.target || folderPath.startsWith(this.options.target + "/")) {
+      this.allFiles.push(file);
+      this.allFiles = this.sortFilesByTimeField(
+        this.allFiles,
+        this.options.timeField
+      );
+      this.filterFilesByRange();
+    }
+  }
+  handleTaggedFileCreate(file) {
+    if (!this.options.target || !this.options.app) return;
+    const targetTag = this.options.target.startsWith("#") ? this.options.target : "#" + this.options.target;
+    const fileCache = this.options.app.metadataCache.getFileCache(file);
+    if (!fileCache || !fileCache.tags) return;
+    if (fileCache.tags.some((tag) => tag.tag === targetTag)) {
+      this.allFiles.push(file);
+      this.allFiles = this.sortFilesByTimeField(
+        this.allFiles,
+        this.options.timeField
+      );
+      this.filterFilesByRange();
+    }
+  }
+  fileDelete(file) {
+    if (this.options.mode === "daily" && getDateFromFile_1(file, "day")) {
+      this.filteredFiles = this.filteredFiles.filter((f) => {
+        return f.basename !== file.basename;
+      });
+      this.allFiles = this.allFiles.filter((f) => {
+        return f.basename !== file.basename;
+      });
+      this.filterFilesByRange();
+      this.checkDailyNote();
+    } else {
+      this.filteredFiles = this.filteredFiles.filter((f) => {
+        return f.basename !== file.basename;
+      });
+      this.allFiles = this.allFiles.filter((f) => {
+        return f.basename !== file.basename;
+      });
+    }
+  }
+  sortDailyNotes(notes) {
+    const { isReverse, baseTimeField } = this.parseTimeField(
+      this.options.timeField
+    );
+    if (baseTimeField === "name") {
+      return [...notes].sort((a, b) => {
+        if (isReverse) {
+          return b.name.localeCompare(a.name);
+        }
+        return a.name.localeCompare(b.name);
+      });
+    }
+    return this.sortFilesByTimeField(notes, this.options.timeField);
+  }
+  getAllFiles() {
+    return this.allFiles;
+  }
+  getFilteredFiles() {
+    return this.filteredFiles;
+  }
+  hasCurrentDayNote() {
+    return this.hasCurrentDay;
+  }
+  forceRefresh() {
+    this.allFiles = [];
+    this.filteredFiles = [];
+    this.hasFetched = false;
+    this.fetchFiles();
+  }
+  updateOptions(options) {
+    this.options = { ...this.options, ...options };
+    if (options.timeRange || options.customRange) {
+      this.filterFilesByRange();
+    }
+    if (options.mode || options.target) {
+      this.allFiles = [];
+      this.filteredFiles = [];
+      this.hasFetched = false;
+      this.fetchFiles();
+    }
+  }
+}
+function get_each_context(ctx, list, i) {
+  const child_ctx = ctx.slice();
+  child_ctx[34] = list[i];
+  return child_ctx;
+}
+function create_if_block_2(ctx) {
+  let div1;
+  return {
+    c() {
+      div1 = element("div");
+      div1.innerHTML = `<div class="dn-stock-text svelte-1crs25f">No files found</div>`;
+      attr(div1, "class", "dn-stock svelte-1crs25f");
+    },
+    m(target, anchor) {
+      insert(target, div1, anchor);
+    },
+    d(detaching) {
+      if (detaching) {
+        detach(div1);
+      }
+    }
+  };
+}
+function create_if_block_1(ctx) {
+  let div1;
+  let mounted;
+  let dispose;
+  return {
+    c() {
+      div1 = element("div");
+      div1.innerHTML = `<div class="dn-blank-day-text svelte-1crs25f">Create a daily note for today ✍</div>`;
+      attr(div1, "class", "dn-blank-day svelte-1crs25f");
+      attr(div1, "aria-hidden", "true");
+    },
+    m(target, anchor) {
+      insert(target, div1, anchor);
+      if (!mounted) {
+        dispose = listen(
+          div1,
+          "click",
+          /*createNewDailyNote*/
+          ctx[12]
+        );
+        mounted = true;
+      }
+    },
+    p: noop,
+    d(detaching) {
+      if (detaching) {
+        detach(div1);
+      }
+      mounted = false;
+      dispose();
+    }
+  };
+}
+function create_each_block(key_1, ctx) {
+  let div;
+  let dailynote;
+  let inview_action;
+  let current;
+  let mounted;
+  let dispose;
+  dailynote = new DailyNote({
+    props: {
+      file: (
+        /*file*/
+        ctx[34]
+      ),
+      plugin: (
+        /*plugin*/
+        ctx[0]
+      ),
+      leaf: (
+        /*leaf*/
+        ctx[1]
+      ),
+      shouldRender: (
+        /*visibleNotes*/
+        ctx[4].has(
+          /*file*/
+          ctx[34].path
+        )
+      ),
+      autoFocus: (
+        /*isToday*/
+        ctx[14](
+          /*file*/
+          ctx[34]
+        )
+      )
+    }
+  });
+  function inview_change_handler(...args) {
+    return (
+      /*inview_change_handler*/
+      ctx[25](
+        /*file*/
+        ctx[34],
+        ...args
+      )
+    );
+  }
+  return {
+    key: key_1,
+    first: null,
+    c() {
+      div = element("div");
+      create_component(dailynote.$$.fragment);
+      attr(div, "class", "daily-note-wrapper svelte-1crs25f");
+      this.first = div;
+    },
+    m(target, anchor) {
+      insert(target, div, anchor);
+      mount_component(dailynote, div, null);
+      current = true;
+      if (!mounted) {
+        dispose = [
+          action_destroyer(inview_action = inview.call(null, div, {
+            rootMargin: "80%",
+            unobserveOnEnter: false,
+            root: (
+              /*leaf*/
+              ctx[1].view.contentEl
+            )
+          })),
+          listen(div, "inview_change", inview_change_handler)
+        ];
+        mounted = true;
+      }
+    },
+    p(new_ctx, dirty) {
+      ctx = new_ctx;
+      const dailynote_changes = {};
+      if (dirty[0] & /*renderedFiles*/
+      64) dailynote_changes.file = /*file*/
+      ctx[34];
+      if (dirty[0] & /*plugin*/
+      1) dailynote_changes.plugin = /*plugin*/
+      ctx[0];
+      if (dirty[0] & /*leaf*/
+      2) dailynote_changes.leaf = /*leaf*/
+      ctx[1];
+      if (dirty[0] & /*visibleNotes, renderedFiles*/
+      80) dailynote_changes.shouldRender = /*visibleNotes*/
+      ctx[4].has(
+        /*file*/
+        ctx[34].path
+      );
+      if (dirty[0] & /*renderedFiles*/
+      64) dailynote_changes.autoFocus = /*isToday*/
+      ctx[14](
+        /*file*/
+        ctx[34]
+      );
+      dailynote.$set(dailynote_changes);
+      if (inview_action && is_function(inview_action.update) && dirty[0] & /*leaf*/
+      2) inview_action.update.call(null, {
+        rootMargin: "80%",
+        unobserveOnEnter: false,
+        root: (
+          /*leaf*/
+          ctx[1].view.contentEl
+        )
+      });
+    },
+    i(local) {
+      if (current) return;
+      transition_in(dailynote.$$.fragment, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(dailynote.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      if (detaching) {
+        detach(div);
+      }
+      destroy_component(dailynote);
+      mounted = false;
+      run_all$1(dispose);
+    }
+  };
+}
+function create_if_block(ctx) {
+  let div;
+  return {
+    c() {
+      div = element("div");
+      div.textContent = "—— No more of results ——";
+      attr(div, "class", "no-more-text svelte-1crs25f");
+    },
+    m(target, anchor) {
+      insert(target, div, anchor);
+    },
+    d(detaching) {
+      if (detaching) {
+        detach(div);
+      }
+    }
+  };
+}
+function create_fragment(ctx) {
+  var _a;
+  let div1;
+  let t0;
+  let show_if = (
+    /*selectionMode*/
+    ctx[3] === "daily" && !/*fileManager*/
+    ((_a = ctx[5]) == null ? void 0 : _a.hasCurrentDayNote()) && /*selectedRange*/
+    (ctx[2] === "all" || /*selectedRange*/
+    ctx[2] === "week" || /*selectedRange*/
+    ctx[2] === "month" || /*selectedRange*/
+    ctx[2] === "year" || /*selectedRange*/
+    ctx[2] === "quarter")
+  );
+  let t1;
+  let each_blocks = [];
+  let each_1_lookup = /* @__PURE__ */ new Map();
+  let t2;
+  let div0;
+  let inview_action;
+  let t3;
+  let current;
+  let mounted;
+  let dispose;
+  let if_block0 = (
+    /*renderedFiles*/
+    ctx[6].length === 0 && create_if_block_2()
+  );
+  let if_block1 = show_if && create_if_block_1(ctx);
+  let each_value = ensure_array_like(
+    /*renderedFiles*/
+    ctx[6]
+  );
+  const get_key = (ctx2) => (
+    /*file*/
+    ctx2[34].path
+  );
+  for (let i = 0; i < each_value.length; i += 1) {
+    let child_ctx = get_each_context(ctx, each_value, i);
+    let key = get_key(child_ctx);
+    each_1_lookup.set(key, each_blocks[i] = create_each_block(key, child_ctx));
+  }
+  let if_block2 = !/*hasMore*/
+  ctx[7] && create_if_block();
+  return {
+    c() {
+      div1 = element("div");
+      if (if_block0) if_block0.c();
+      t0 = space();
+      if (if_block1) if_block1.c();
+      t1 = space();
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].c();
+      }
+      t2 = space();
+      div0 = element("div");
+      t3 = space();
+      if (if_block2) if_block2.c();
+      attr(div0, "class", "dn-view-loader");
+      attr(div1, "class", "daily-note-view");
+    },
+    m(target, anchor) {
+      insert(target, div1, anchor);
+      if (if_block0) if_block0.m(div1, null);
+      append(div1, t0);
+      if (if_block1) if_block1.m(div1, null);
+      append(div1, t1);
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        if (each_blocks[i]) {
+          each_blocks[i].m(div1, null);
+        }
+      }
+      append(div1, t2);
+      append(div1, div0);
+      ctx[26](div0);
+      append(div1, t3);
+      if (if_block2) if_block2.m(div1, null);
+      current = true;
+      if (!mounted) {
+        dispose = [
+          action_destroyer(inview_action = inview.call(null, div0, { root: (
+            /*leaf*/
+            ctx[1].view.containerEl
+          ) })),
+          listen(
+            div0,
+            "inview_init",
+            /*startFillViewport*/
+            ctx[9]
+          ),
+          listen(
+            div0,
+            "inview_change",
+            /*infiniteHandler*/
+            ctx[11]
+          ),
+          listen(
+            div0,
+            "inview_leave",
+            /*stopFillViewport*/
+            ctx[10]
+          )
+        ];
+        mounted = true;
+      }
+    },
+    p(ctx2, dirty) {
+      var _a2;
+      if (
+        /*renderedFiles*/
+        ctx2[6].length === 0
+      ) {
+        if (if_block0) ;
+        else {
+          if_block0 = create_if_block_2();
+          if_block0.c();
+          if_block0.m(div1, t0);
+        }
+      } else if (if_block0) {
+        if_block0.d(1);
+        if_block0 = null;
+      }
+      if (dirty[0] & /*selectionMode, fileManager, selectedRange*/
+      44) show_if = /*selectionMode*/
+      ctx2[3] === "daily" && !/*fileManager*/
+      ((_a2 = ctx2[5]) == null ? void 0 : _a2.hasCurrentDayNote()) && /*selectedRange*/
+      (ctx2[2] === "all" || /*selectedRange*/
+      ctx2[2] === "week" || /*selectedRange*/
+      ctx2[2] === "month" || /*selectedRange*/
+      ctx2[2] === "year" || /*selectedRange*/
+      ctx2[2] === "quarter");
+      if (show_if) {
+        if (if_block1) {
+          if_block1.p(ctx2, dirty);
+        } else {
+          if_block1 = create_if_block_1(ctx2);
+          if_block1.c();
+          if_block1.m(div1, t1);
+        }
+      } else if (if_block1) {
+        if_block1.d(1);
+        if_block1 = null;
+      }
+      if (dirty[0] & /*leaf, handleNoteVisibilityChange, renderedFiles, plugin, visibleNotes, isToday*/
+      24659) {
+        each_value = ensure_array_like(
+          /*renderedFiles*/
+          ctx2[6]
+        );
+        group_outros();
+        each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx2, each_value, each_1_lookup, div1, outro_and_destroy_block, create_each_block, t2, get_each_context);
+        check_outros();
+      }
+      if (inview_action && is_function(inview_action.update) && dirty[0] & /*leaf*/
+      2) inview_action.update.call(null, { root: (
+        /*leaf*/
+        ctx2[1].view.containerEl
+      ) });
+      if (!/*hasMore*/
+      ctx2[7]) {
+        if (if_block2) ;
+        else {
+          if_block2 = create_if_block();
+          if_block2.c();
+          if_block2.m(div1, null);
+        }
+      } else if (if_block2) {
+        if_block2.d(1);
+        if_block2 = null;
+      }
+    },
+    i(local) {
+      if (current) return;
+      for (let i = 0; i < each_value.length; i += 1) {
+        transition_in(each_blocks[i]);
+      }
+      current = true;
+    },
+    o(local) {
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        transition_out(each_blocks[i]);
+      }
+      current = false;
+    },
+    d(detaching) {
+      if (detaching) {
+        detach(div1);
+      }
+      if (if_block0) if_block0.d();
+      if (if_block1) if_block1.d();
+      for (let i = 0; i < each_blocks.length; i += 1) {
+        each_blocks[i].d();
+      }
+      ctx[26](null);
+      if (if_block2) if_block2.d();
+      mounted = false;
+      run_all$1(dispose);
+    }
+  };
+}
+const size = 1;
+function instance($$self, $$props, $$invalidate) {
+  let fileManagerOptions;
+  let { plugin } = $$props;
+  let { leaf } = $$props;
+  let { selectedRange = "all" } = $$props;
+  let { customRange = null } = $$props;
+  let { selectionMode = "daily" } = $$props;
+  let { target = "" } = $$props;
+  let { timeField = "mtime" } = $$props;
+  let intervalId;
+  let renderedFiles = [];
+  let filteredFiles = [];
+  let visibleNotes = /* @__PURE__ */ new Set();
+  let hasMore = true;
+  let firstLoaded = true;
+  let loaderRef;
+  let fileManager;
+  function handleScroll() {
+    const el = leaf.view.contentEl;
+    if (!el || !hasMore) return;
+    if (el.scrollTop + el.clientHeight * 2.5 > el.scrollHeight) {
+      infiniteHandler();
+    }
+  }
+  onMount(() => {
+    var _a;
+    $$invalidate(5, fileManager = new FileManager(fileManagerOptions));
+    $$invalidate(24, filteredFiles = fileManager.getFilteredFiles());
+    $$invalidate(7, hasMore = filteredFiles.length > 0);
+    startFillViewport();
+    updateTitleElement();
+    (_a = leaf.view.contentEl) === null || _a === void 0 ? void 0 : _a.addEventListener("scroll", handleScroll, { passive: true });
+  });
+  onDestroy(() => {
+    var _a;
+    (_a = leaf.view.contentEl) === null || _a === void 0 ? void 0 : _a.removeEventListener("scroll", handleScroll);
+  });
+  function updateTitleElement() {
+    if (!leaf || !leaf.view || !leaf.view.titleEl) return;
+    const titleEl = leaf.view.titleEl;
+    titleEl.empty();
+    let titleText = "";
+    if (selectionMode === "daily" && selectedRange !== "all") {
+      if (selectedRange === "custom" && customRange) {
+        titleText = `Showing notes from: ${require$$0.moment(customRange.start).format("YYYY-MM-DD")} to ${require$$0.moment(customRange.end).format("YYYY-MM-DD")}`;
+      } else {
+        titleText = `Showing notes for: ${selectedRange}`;
+      }
+    } else if (selectionMode === "folder") {
+      titleText = `Showing files from folder: ${target}`;
+      if (selectedRange !== "all") {
+        titleText += ` (${timeField === "ctime" ? "created" : "modified"} ${selectedRange})`;
+      }
+    } else if (selectionMode === "tag") {
+      titleText = `Showing files with tag: ${target}`;
+      if (selectedRange !== "all") {
+        titleText += ` (${timeField === "ctime" ? "created" : "modified"} ${selectedRange})`;
+      }
+    }
+    if (titleText) {
+      titleEl.setText(titleText);
+    } else {
+      titleEl.setText("Daily Notes");
+    }
+  }
+  function startFillViewport() {
+    if (!intervalId) {
+      intervalId = setInterval(infiniteHandler, 1);
+    }
+  }
+  function stopFillViewport() {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+  function infiniteHandler() {
+    if (leaf.height === 0) return;
+    if (!fileManager || !hasMore) return;
+    if (filteredFiles.length === 0) {
+      $$invalidate(7, hasMore = false);
+    } else {
+      $$invalidate(6, renderedFiles = [...renderedFiles, ...filteredFiles.splice(0, size)]);
+      if (firstLoaded) {
+        window.setTimeout(
+          () => {
+            ensureViewFilled();
+            firstLoaded = false;
+          },
+          100
+        );
+      }
+    }
+  }
+  function ensureViewFilled() {
+    if (!loaderRef) return;
+    const loaderRect = loaderRef.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const contentHeight = leaf.view.contentEl.clientHeight || leaf.view.contentEl.innerHeight || viewportHeight;
+    const effectiveHeight = Math.max(viewportHeight, contentHeight) + 200;
+    if (loaderRect.top < effectiveHeight) {
+      infiniteHandler();
+      window.setTimeout(
+        () => {
+          if (hasMore && loaderRef && loaderRef.getBoundingClientRect().top < effectiveHeight) {
+            ensureViewFilled();
+          }
+        },
+        50
+      );
+    }
+  }
+  function createNewDailyNote() {
+    return __awaiter(this, void 0, void 0, function* () {
+      const newNote = yield fileManager.createNewDailyNote();
+      if (newNote) {
+        $$invalidate(6, renderedFiles = [newNote, ...renderedFiles]);
+        visibleNotes.add(newNote.path);
+        $$invalidate(4, visibleNotes);
+      }
+    });
+  }
+  function refresh() {
+    fileManager.forceRefresh();
+    $$invalidate(6, renderedFiles = []);
+    visibleNotes.clear();
+    $$invalidate(24, filteredFiles = fileManager.getFilteredFiles());
+    $$invalidate(7, hasMore = filteredFiles.length > 0);
+    firstLoaded = true;
+    startFillViewport();
+  }
+  function focusTodayNote() {
+    if (selectionMode !== "daily") return;
+    const hadToday = fileManager.hasCurrentDayNote();
+    fileManager.checkDailyNote();
+    const hasToday = fileManager.hasCurrentDayNote();
+    if (!hadToday && hasToday) {
+      $$invalidate(6, renderedFiles = []);
+      visibleNotes.clear();
+      $$invalidate(24, filteredFiles = fileManager.getFilteredFiles());
+      $$invalidate(7, hasMore = filteredFiles.length > 0);
+      firstLoaded = true;
+      startFillViewport();
+    }
+    if (!hasToday) return;
+    const todayNote = getDailyNote_1(require$$0.moment(), getAllDailyNotes_1());
+    if (!todayNote) return;
+    visibleNotes.add(todayNote.path);
+    $$invalidate(4, visibleNotes);
+    focusFileEditor(todayNote);
+  }
+  function focusFileEditor(file, attempts = 0) {
+    window.setTimeout(
+      () => {
+        var _a, _b;
+        let targetLeaf = null;
+        plugin.app.workspace.iterateAllLeaves((l) => {
+          var _a2;
+          if (isDailyNoteLeaf(l) && l.view instanceof require$$0.MarkdownView && ((_a2 = l.view.file) === null || _a2 === void 0 ? void 0 : _a2.path) === file.path) {
+            targetLeaf = l;
+          }
+        });
+        if (targetLeaf && targetLeaf.view instanceof require$$0.MarkdownView) {
+          const editor = targetLeaf.view.editor;
+          editor.focus();
+          editor.setCursor(editor.lineCount(), 0);
+          (_b = (_a = targetLeaf.view.containerEl).scrollIntoView) === null || _b === void 0 ? void 0 : _b.call(_a, { block: "center" });
+        } else if (attempts < 10) {
+          focusFileEditor(file, attempts + 1);
+        }
+      },
+      100
+    );
+  }
+  function tick2() {
+    check();
+    $$invalidate(6, renderedFiles), $$invalidate(5, fileManager), $$invalidate(2, selectedRange), $$invalidate(15, customRange), $$invalidate(3, selectionMode), $$invalidate(16, target), $$invalidate(17, timeField), $$invalidate(4, visibleNotes), $$invalidate(24, filteredFiles);
+  }
+  function check() {
+    const hadDailyNote = fileManager.hasCurrentDayNote();
+    fileManager.checkDailyNote();
+    const hasDailyNote = fileManager.hasCurrentDayNote();
+    if (hadDailyNote !== hasDailyNote || selectionMode === "daily" && selectedRange !== "all") {
+      $$invalidate(24, filteredFiles = fileManager.getFilteredFiles());
+      if (selectionMode === "daily") {
+        $$invalidate(6, renderedFiles = []);
+        visibleNotes.clear();
+        $$invalidate(7, hasMore = filteredFiles.length > 0);
+        firstLoaded = true;
+        startFillViewport();
+      }
+    }
+  }
+  function fileCreate(file) {
+    fileManager.fileCreate(file);
+    if (selectionMode === "daily") {
+      const filteredFiles2 = fileManager.getFilteredFiles();
+      if (filteredFiles2.some((f) => f.basename === file.basename) && !renderedFiles.some((f) => f.basename === file.basename)) {
+        $$invalidate(6, renderedFiles = [file, ...renderedFiles]);
+        visibleNotes.add(file.path);
+        $$invalidate(4, visibleNotes);
+      }
+    } else {
+      $$invalidate(6, renderedFiles = fileManager.getFilteredFiles().slice(0, renderedFiles.length));
+    }
+  }
+  function fileDelete(file) {
+    fileManager.fileDelete(file);
+    $$invalidate(6, renderedFiles = renderedFiles.filter((dailyNote) => {
+      return dailyNote.basename !== file.basename;
+    }));
+    if (visibleNotes.has(file.path)) {
+      visibleNotes.delete(file.path);
+      $$invalidate(4, visibleNotes);
+    }
+  }
+  function handleNoteVisibilityChange(file, isVisible) {
+    if (isVisible) {
+      visibleNotes.add(file.path);
+    } else {
+      visibleNotes.delete(file.path);
+    }
+    $$invalidate(4, visibleNotes);
+  }
+  function isToday(file) {
+    var _a;
+    if (!plugin.settings.autoFocus) return false;
+    const fileDate = getDateFromFile_1(file, "day");
+    return (_a = fileDate === null || fileDate === void 0 ? void 0 : fileDate.isSame(require$$0.moment(), "day")) !== null && _a !== void 0 ? _a : false;
+  }
+  const inview_change_handler = (file, { detail }) => handleNoteVisibilityChange(file, detail.inView);
+  function div0_binding($$value) {
+    binding_callbacks$1[$$value ? "unshift" : "push"](() => {
+      loaderRef = $$value;
+      $$invalidate(8, loaderRef);
+    });
+  }
+  $$self.$$set = ($$props2) => {
+    if ("plugin" in $$props2) $$invalidate(0, plugin = $$props2.plugin);
+    if ("leaf" in $$props2) $$invalidate(1, leaf = $$props2.leaf);
+    if ("selectedRange" in $$props2) $$invalidate(2, selectedRange = $$props2.selectedRange);
+    if ("customRange" in $$props2) $$invalidate(15, customRange = $$props2.customRange);
+    if ("selectionMode" in $$props2) $$invalidate(3, selectionMode = $$props2.selectionMode);
+    if ("target" in $$props2) $$invalidate(16, target = $$props2.target);
+    if ("timeField" in $$props2) $$invalidate(17, timeField = $$props2.timeField);
+  };
+  $$self.$$.update = () => {
+    if ($$self.$$.dirty[0] & /*selectionMode, target, selectedRange, customRange, plugin, timeField*/
+    229389) {
+      fileManagerOptions = {
+        mode: selectionMode,
+        target,
+        timeRange: selectedRange,
+        customRange,
+        app: plugin.app,
+        timeField,
+        hideUnreachedDates: plugin.settings.hideUnreachedDates
+      };
+    }
+    if ($$self.$$.dirty[0] & /*fileManager, selectedRange, customRange, selectionMode, target, timeField, visibleNotes, filteredFiles*/
+    17006652) {
+      if (fileManager && (selectedRange !== fileManager.options.timeRange || customRange !== fileManager.options.customRange || selectionMode !== fileManager.options.mode || target !== fileManager.options.target || timeField !== fileManager.options.timeField)) {
+        fileManager.updateOptions({
+          timeRange: selectedRange,
+          customRange,
+          mode: selectionMode,
+          target,
+          timeField
+        });
+        $$invalidate(6, renderedFiles = []);
+        visibleNotes.clear();
+        $$invalidate(24, filteredFiles = fileManager.getFilteredFiles());
+        $$invalidate(7, hasMore = filteredFiles.length > 0);
+        firstLoaded = true;
+        startFillViewport();
+        updateTitleElement();
+      }
+    }
+  };
+  return [
+    plugin,
+    leaf,
+    selectedRange,
+    selectionMode,
+    visibleNotes,
+    fileManager,
+    renderedFiles,
+    hasMore,
+    loaderRef,
+    startFillViewport,
+    stopFillViewport,
+    infiniteHandler,
+    createNewDailyNote,
+    handleNoteVisibilityChange,
+    isToday,
+    customRange,
+    target,
+    timeField,
+    refresh,
+    focusTodayNote,
+    tick2,
+    check,
+    fileCreate,
+    fileDelete,
+    filteredFiles,
+    inview_change_handler,
+    div0_binding
+  ];
+}
+class DailyNoteEditorView extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(
+      this,
+      options,
+      instance,
+      create_fragment,
+      safe_not_equal,
+      {
+        plugin: 0,
+        leaf: 1,
+        selectedRange: 2,
+        customRange: 15,
+        selectionMode: 3,
+        target: 16,
+        timeField: 17,
+        refresh: 18,
+        focusTodayNote: 19,
+        tick: 20,
+        check: 21,
+        fileCreate: 22,
+        fileDelete: 23
+      },
+      null,
+      [-1, -1]
+    );
+  }
+  get refresh() {
+    return this.$$.ctx[18];
+  }
+  get focusTodayNote() {
+    return this.$$.ctx[19];
+  }
+  get tick() {
+    return this.$$.ctx[20];
+  }
+  get check() {
+    return this.$$.ctx[21];
+  }
+  get fileCreate() {
+    return this.$$.ctx[22];
+  }
+  get fileDelete() {
+    return this.$$.ctx[23];
+  }
+}
+const DAILY_NOTE_VIEW_TYPE = "daily-note-editor-view";
+class DailyNoteView extends require$$0.ItemView {
+  constructor(leaf, plugin) {
+    super(leaf);
+    this.selectedDaysRange = "all";
+    this.selectionMode = "daily";
+    this.target = "";
+    this.timeField = "mtime";
+    this.timeFieldActionEl = null;
+    this.customRange = null;
+    this.getMode = () => {
+      return "source";
+    };
+    this.onFileCreate = (file) => {
+      if (file instanceof require$$0.TFile) this.view.fileCreate(file);
+    };
+    this.onFileDelete = (file) => {
+      if (file instanceof require$$0.TFile) this.view.fileDelete(file);
+    };
+    this.plugin = plugin;
+    this.scope = new require$$0.Scope(plugin.app.scope);
+  }
+  getViewType() {
+    return DAILY_NOTE_VIEW_TYPE;
+  }
+  getDisplayText() {
+    if (this.selectionMode === "daily") {
+      return "Daily Notes";
+    } else if (this.selectionMode === "folder") {
+      return `Folder: ${this.target}`;
+    } else if (this.selectionMode === "tag") {
+      return `Tag: ${this.target}`;
+    }
+    return "Notes";
+  }
+  getIcon() {
+    if (this.selectionMode === "daily") {
+      return "calendar";
+    } else if (this.selectionMode === "folder") {
+      return "folder";
+    } else if (this.selectionMode === "tag") {
+      return "tag";
+    }
+    return "document";
+  }
+  setSelectedRange(range) {
+    this.selectedDaysRange = range;
+    if (this.view) {
+      if (range === "custom") {
+        this.view.$set({
+          selectedRange: range,
+          customRange: this.customRange
+        });
+      } else {
+        this.view.$set({ selectedRange: range });
+      }
+    }
+  }
+  setSelectionMode(mode, target = "") {
+    this.selectionMode = mode;
+    this.target = target;
+    if (this.timeFieldActionEl) {
+      this.timeFieldActionEl.style.display = mode === "daily" ? "none" : "";
+    }
+    if (this.view) {
+      this.view.$set({
+        selectionMode: mode,
+        target
+      });
+    }
+  }
+  saveCurrentSelectionAsPreset() {
+    if (this.selectionMode !== "daily" && this.target) {
+      const existingPresetIndex = this.plugin.settings.preset.findIndex(
+        (p) => p.type === this.selectionMode && p.target === this.target
+      );
+      if (existingPresetIndex === -1) {
+        this.plugin.settings.preset.push({
+          type: this.selectionMode,
+          target: this.target
+        });
+        this.plugin.saveSettings();
+      }
+    }
+  }
+  getState() {
+    const state2 = super.getState();
+    return {
+      ...state2,
+      selectionMode: this.selectionMode,
+      target: this.target,
+      timeField: this.timeField,
+      selectedRange: this.selectedDaysRange,
+      customRange: this.customRange
+    };
+  }
+  async setState(state2, result) {
+    await super.setState(state2, result);
+    if (state2 && typeof state2 === "object" && !this.view) {
+      const customState = state2;
+      if (customState.selectionMode)
+        this.selectionMode = customState.selectionMode;
+      if (customState.target) this.target = customState.target;
+      if (customState.timeField) this.timeField = customState.timeField;
+      if (customState.selectedRange)
+        this.selectedDaysRange = customState.selectedRange;
+      if (customState.customRange)
+        this.customRange = customState.customRange;
+      this.view = new DailyNoteEditorView({
+        target: this.contentEl,
+        props: {
+          plugin: this.plugin,
+          leaf: this.leaf,
+          selectedRange: this.selectedDaysRange,
+          customRange: this.customRange,
+          selectionMode: this.selectionMode,
+          target: this.target,
+          timeField: this.timeField
+        }
+      });
+      this.app.workspace.onLayoutReady(this.view.tick.bind(this));
+      this.registerInterval(
+        window.setInterval(async () => {
+          this.view.check();
+        }, 1e3 * 60 * 60)
+      );
+    }
+  }
+  setTimeField(field) {
+    this.timeField = field;
+    if (this.view) {
+      this.view.$set({ timeField: field });
+    }
+  }
+  openDailyNoteEditor() {
+    this.plugin.openDailyNoteEditor();
+  }
+  /**
+   * Focus today's daily note in this view and move the cursor to the end.
+   * Used when switching to an already-open editor.
+   */
+  focusTodayNote() {
+    if (this.view) {
+      this.view.focusTodayNote();
+    }
+  }
+  async onOpen() {
+    this.scope.register(["Mod"], "f", (e) => {
+    });
+    this.timeFieldActionEl = this.addAction("arrow-up-down", "Sort order", (e) => {
+      const menu = new require$$0.Menu();
+      const addTimeFieldOption = (title, field) => {
+        menu.addItem((item) => {
+          item.setTitle(title);
+          item.setChecked(this.timeField === field);
+          item.onClick(() => {
+            this.setTimeField(field);
+          });
+        });
+      };
+      addTimeFieldOption("Creation Time", "ctime");
+      addTimeFieldOption("Modification Time", "mtime");
+      addTimeFieldOption("Creation Time (Reverse)", "ctimeReverse");
+      addTimeFieldOption("Modification Time (Reverse)", "mtimeReverse");
+      addTimeFieldOption("Name (A-Z)", "name");
+      addTimeFieldOption("Name (Z-A)", "nameReverse");
+      menu.showAtMouseEvent(e);
+    });
+    if (this.selectionMode === "daily") {
+      this.timeFieldActionEl.style.display = "none";
+    }
+    this.addAction("layers-2", "Select view mode", (e) => {
+      const menu = new require$$0.Menu();
+      const addModeOption = (title, mode) => {
+        menu.addItem((item) => {
+          item.setTitle(title);
+          item.setChecked(
+            this.selectionMode === mode && !this.target
+          );
+          item.onClick(() => {
+            if (mode === "daily") {
+              this.setSelectionMode(mode);
+            } else {
+              const modal = new SelectTargetModal(
+                this.plugin.app,
+                mode,
+                (target) => {
+                  this.setSelectionMode(mode, target);
+                  this.saveCurrentSelectionAsPreset();
+                }
+              );
+              modal.open();
+            }
+          });
+        });
+      };
+      addModeOption("Daily Notes", "daily");
+      addModeOption("Folder", "folder");
+      addModeOption("Tag", "tag");
+      if (this.plugin.settings.preset.length > 0) {
+        menu.addSeparator();
+        menu.addItem((item) => {
+          item.setTitle("Saved Presets");
+          item.setDisabled(true);
+        });
+        for (const preset of this.plugin.settings.preset) {
+          const title = preset.type === "folder" ? `Folder: ${preset.target}` : `Tag: ${preset.target}`;
+          menu.addItem((item) => {
+            item.setTitle(title);
+            item.setChecked(
+              this.selectionMode === preset.type && this.target === preset.target
+            );
+            item.onClick(() => {
+              this.setSelectionMode(preset.type, preset.target);
+            });
+          });
+        }
+      }
+      menu.showAtMouseEvent(e);
+    });
+    this.addAction("calendar-range", "Select date range", (e) => {
+      const menu = new require$$0.Menu();
+      const addRangeOption = (title, range) => {
+        menu.addItem((item) => {
+          item.setTitle(title);
+          item.setChecked(this.selectedDaysRange === range);
+          item.onClick(() => {
+            this.setSelectedRange(range);
+          });
+        });
+      };
+      addRangeOption("All Notes", "all");
+      addRangeOption("This Week", "week");
+      addRangeOption("This Month", "month");
+      addRangeOption("This Year", "year");
+      addRangeOption("Last Week", "last-week");
+      addRangeOption("Last Month", "last-month");
+      addRangeOption("Last Year", "last-year");
+      addRangeOption("This Quarter", "quarter");
+      addRangeOption("Last Quarter", "last-quarter");
+      menu.addSeparator();
+      menu.addItem((item) => {
+        item.setTitle("Custom Date Range");
+        item.setChecked(this.selectedDaysRange === "custom");
+        item.onClick(() => {
+          const modal = new CustomRangeModal(this.app, (range) => {
+            this.customRange = range;
+            this.setSelectedRange("custom");
+          });
+          modal.open();
+        });
+      });
+      menu.showAtMouseEvent(e);
+    });
+    this.addAction("refresh-cw", "Refresh", () => {
+      if (this.view) {
+        this.view.refresh();
+      }
+    });
+    this.app.vault.on("create", this.onFileCreate);
+    this.app.vault.on("delete", this.onFileDelete);
+  }
+  onPaneMenu(menu, source) {
+    if (source === "tab-header" || source === "more-options") {
+      menu.addItem((item) => {
+        item.setIcon(this.leaf.pinned ? "pin-off" : "pin");
+        item.setTitle(this.leaf.pinned ? "Unpin" : "Pin");
+        item.onClick(() => {
+          this.leaf.togglePinned();
+        });
+      });
+    }
+  }
+  /**
+   * Refresh the view for a new day
+   * This is called when the date changes (e.g., after midnight)
+   */
+  refreshForNewDay() {
+    if (this.selectionMode === "daily" && this.view) {
+      this.view.refresh();
+    }
+  }
+}
+class CustomRangeModal extends require$$0.Modal {
+  constructor(app2, saveCallback) {
+    super(app2);
+    this.saveCallback = saveCallback;
+    this.startDate = /* @__PURE__ */ new Date();
+    this.endDate = /* @__PURE__ */ new Date();
+  }
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.createEl("h2", { text: "Select Custom Date Range" });
+    const startDateContainer = contentEl.createEl("div", {
+      cls: "custom-range-date-container"
+    });
+    startDateContainer.createEl("span", { text: "Start Date: " });
+    const startDatePicker = startDateContainer.createEl("input", {
+      type: "date",
+      value: this.formatDate(this.startDate)
+    });
+    startDatePicker.addEventListener("change", (e) => {
+      this.startDate = new Date(e.target.value);
+    });
+    const endDateContainer = contentEl.createEl("div", {
+      cls: "custom-range-date-container"
+    });
+    endDateContainer.createEl("span", { text: "End Date: " });
+    const endDatePicker = endDateContainer.createEl("input", {
+      type: "date",
+      value: this.formatDate(this.endDate)
+    });
+    endDatePicker.addEventListener("change", (e) => {
+      this.endDate = new Date(e.target.value);
+    });
+    const buttonContainer = contentEl.createEl("div", {
+      cls: "custom-range-button-container"
+    });
+    new require$$0.ButtonComponent(buttonContainer).setButtonText("Cancel").onClick(() => {
+      this.close();
+    });
+    new require$$0.ButtonComponent(buttonContainer).setButtonText("Confirm").setCta().onClick(() => {
+      this.saveCallback({
+        start: this.startDate,
+        end: this.endDate
+      });
+      this.close();
+    });
+  }
+  formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+  onClose() {
+    this.contentEl.empty();
+  }
+}
+class SelectTargetModal extends require$$0.Modal {
+  constructor(app2, mode, saveCallback) {
+    super(app2);
+    this.mode = mode;
+    this.saveCallback = saveCallback;
+  }
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.createEl("h2", {
+      text: this.mode === "folder" ? "Select Folder" : "Select Tag"
+    });
+    const form = contentEl.createEl("form");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      this.save();
+    });
+    const targetSetting = form.createDiv();
+    targetSetting.addClass("setting-item");
+    const targetSettingInfo = targetSetting.createDiv();
+    targetSettingInfo.addClass("setting-item-info");
+    targetSettingInfo.createEl("div", {
+      text: this.mode === "folder" ? "Folder Path" : "Tag Name",
+      cls: "setting-item-name"
+    });
+    targetSettingInfo.createEl("div", {
+      text: this.mode === "folder" ? "Enter the path to the folder (e.g., 'folder/subfolder')" : "Enter the tag name without the '#' (e.g., 'tag')",
+      cls: "setting-item-description"
+    });
+    const targetSettingControl = targetSetting.createDiv();
+    targetSettingControl.addClass("setting-item-control");
+    this.targetInput = targetSettingControl.createEl("input", {
+      type: "text",
+      value: ""
+    });
+    this.targetInput.addClass("target-input");
+    const footerEl = contentEl.createDiv();
+    footerEl.addClass("modal-button-container");
+    footerEl.createEl("button", {
+      text: "Cancel",
+      cls: "mod-warning",
+      attr: {
+        type: "button"
+      }
+    }).addEventListener("click", () => {
+      this.close();
+    });
+    footerEl.createEl("button", {
+      text: "Save",
+      cls: "mod-cta",
+      attr: {
+        type: "submit"
+      }
+    }).addEventListener("click", (e) => {
+      e.preventDefault();
+      this.save();
+    });
+  }
+  save() {
+    const target = this.targetInput.value.trim();
+    if (target) {
+      this.saveCallback(target);
+      this.close();
+    }
+  }
+  onClose() {
+    const { contentEl } = this;
+    contentEl.empty();
+  }
+}
+class DailyNoteViewPlugin extends require$$0.Plugin {
+  async onload() {
+    this.addSettingTab(new DailyNoteSettingTab(this.app, this));
+    await this.loadSettings();
+    this.patchWorkspace();
+    this.patchWorkspaceLeaf();
+    addIconList();
+    this.lastCheckedDay = require$$0.moment().local().format("YYYY-MM-DD");
+    this.settings.useArrowUpOrDownToNavigate && this.registerEditorExtension([
+      createUpDownNavigationExtension({
+        app: this.app,
+        plugin: this
+      })
+      // setActiveEditorExt({ app: this.app, plugin: this }),
+    ]);
+    this.registerView(
+      DAILY_NOTE_VIEW_TYPE,
+      (leaf) => this.view = new DailyNoteView(leaf, this)
+    );
+    this.addRibbonIcon(
+      "calendar-range",
+      "Open Daily Note Editor",
+      (evt) => this.openDailyNoteEditor()
+    );
+    this.addCommand({
+      id: "open-daily-note-editor",
+      name: "Open Daily Note Editor",
+      callback: () => this.openDailyNoteEditor()
+    });
+    this.initCssRules();
+    if (this.settings.createAndOpenOnStartup) {
+      this.app.workspace.onLayoutReady(async () => {
+        await this.ensureTodaysDailyNoteExists();
+        if (this.app.workspace.getLeavesOfType(DAILY_NOTE_VIEW_TYPE).length > 0)
+          return;
+        await this.openDailyNoteEditor();
+      });
+    }
+    this.registerInterval(
+      window.setInterval(this.checkDayChange.bind(this), 1e3 * 60 * 15)
+    );
+    this.app.workspace.on("file-menu", (menu, file, source, leaf) => {
+      if (file instanceof require$$0.TFolder) {
+        menu.addItem((item) => {
+          item.setIcon("calendar-range");
+          item.setTitle("Open daily notes for this folder");
+          item.onClick(() => {
+            this.openFolderView(file.path);
+          });
+        });
+      }
+    });
+  }
+  onunload() {
+    this.app.workspace.detachLeavesOfType(DAILY_NOTE_VIEW_TYPE);
+    document.body.toggleClass("daily-notes-hide-frontmatter", false);
+    document.body.toggleClass("daily-notes-hide-backlinks", false);
+  }
+  async openDailyNoteEditor() {
+    const workspace = this.app.workspace;
+    if (this.settings.createOnOpen) {
+      await this.ensureTodaysDailyNoteExists();
+    }
+    if (this.settings.switchToExisting) {
+      const leaves = workspace.getLeavesOfType(DAILY_NOTE_VIEW_TYPE);
+      if (leaves.length > 0) {
+        workspace.revealLeaf(leaves[0]);
+        if (this.settings.autoFocus) {
+          leaves[0].view.focusTodayNote();
+        }
+        return;
+      }
+    }
+    const leaf = workspace.getLeaf(true);
+    await leaf.setViewState({ type: DAILY_NOTE_VIEW_TYPE });
+    workspace.revealLeaf(leaf);
+  }
+  async openFolderView(folderPath, timeField = "mtime") {
+    const workspace = this.app.workspace;
+    const leaf = workspace.getLeaf(true);
+    await leaf.setViewState({ type: DAILY_NOTE_VIEW_TYPE });
+    const view2 = leaf.view;
+    view2.setSelectionMode("folder", folderPath);
+    view2.setTimeField(timeField);
+    workspace.revealLeaf(leaf);
+  }
+  async openTagView(tagName, timeField = "mtime") {
+    const workspace = this.app.workspace;
+    const leaf = workspace.getLeaf(true);
+    await leaf.setViewState({ type: DAILY_NOTE_VIEW_TYPE });
+    const view2 = leaf.view;
+    view2.setSelectionMode("tag", tagName);
+    view2.setTimeField(timeField);
+    workspace.revealLeaf(leaf);
+  }
+  async ensureTodaysDailyNoteExists() {
+    try {
+      const currentDate = require$$0.moment();
+      const allDailyNotes = getAllDailyNotes_1();
+      const currentDailyNote = getDailyNote_1(currentDate, allDailyNotes);
+      if (!currentDailyNote) {
+        await createDailyNote_1(currentDate);
+      }
+    } catch (error) {
+      console.error("Failed to create daily note:", error);
+    }
+  }
+  initCssRules() {
+    document.body.toggleClass(
+      "daily-notes-hide-frontmatter",
+      this.settings.hideFrontmatter
+    );
+    document.body.toggleClass(
+      "daily-notes-hide-backlinks",
+      this.settings.hideBacklinks
+    );
+  }
+  patchWorkspace() {
+    let layoutChanging = false;
+    const uninstaller = around(require$$0.Workspace.prototype, {
+      getActiveViewOfType: (next) => function(t) {
+        const result = next.call(this, t);
+        if (!result) {
+          if ((t == null ? void 0 : t.VIEW_TYPE) === "markdown") {
+            const activeLeaf = this.activeLeaf;
+            if ((activeLeaf == null ? void 0 : activeLeaf.view) instanceof DailyNoteView) {
+              return activeLeaf.view.editMode;
+            } else {
+              return result;
+            }
+          }
+        }
+        return result;
+      },
+      changeLayout(old) {
+        return async function(workspace) {
+          layoutChanging = true;
+          try {
+            await old.call(this, workspace);
+          } finally {
+            layoutChanging = false;
+          }
+        };
+      },
+      iterateLeaves(old) {
+        return function(arg1, arg2) {
+          if (old.call(this, arg1, arg2)) return true;
+          const cb = typeof arg1 === "function" ? arg1 : arg2;
+          const parent = typeof arg1 === "function" ? arg2 : arg1;
+          if (!parent) return false;
+          if (layoutChanging) return false;
+          if (!require$$0.requireApiVersion("0.15.0")) {
+            if (parent === this.app.workspace.rootSplit || require$$0.WorkspaceContainer && parent instanceof require$$0.WorkspaceContainer) {
+              for (const popover of DailyNoteEditor.popoversForWindow(
+                parent.win
+              )) {
+                if (old.call(this, cb, popover.rootSplit))
+                  return true;
+              }
+            }
+          }
+          return false;
+        };
+      },
+      setActiveLeaf: (next) => function(e, t) {
+        if (e.parentLeaf) {
+          e.parentLeaf.activeTime = 17e11;
+          next.call(this, e.parentLeaf, t);
+          if (e.view.editMode) {
+            this.activeEditor = e.view;
+            e.parentLeaf.view.editMode = e.view;
+          }
+          return;
+        }
+        return next.call(this, e, t);
+      }
+    });
+    this.register(uninstaller);
+  }
+  // Used for patch workspaceleaf pinned behaviors
+  patchWorkspaceLeaf() {
+    this.register(
+      around(require$$0.WorkspaceLeaf.prototype, {
+        getRoot(old) {
+          return function() {
+            const top = old.call(this);
+            return (top == null ? void 0 : top.getRoot) === this.getRoot ? top : top == null ? void 0 : top.getRoot();
+          };
+        },
+        setPinned(old) {
+          return function(pinned) {
+            old.call(this, pinned);
+            if (isDailyNoteLeaf(this) && !pinned)
+              this.setPinned(true);
+          };
+        },
+        openFile(old) {
+          return function(file, openState) {
+            if (isDailyNoteLeaf(this)) {
+              setTimeout(
+                around(require$$0.Workspace.prototype, {
+                  recordMostRecentOpenedFile(old2) {
+                    return function(_file) {
+                      if (_file !== file) {
+                        return old2.call(this, _file);
+                      }
+                    };
+                  }
+                }),
+                1
+              );
+              const recentFiles = this.app.plugins.plugins["recent-files-obsidian"];
+              if (recentFiles)
+                setTimeout(
+                  around(recentFiles, {
+                    shouldAddFile(old2) {
+                      return function(_file) {
+                        return _file !== file && old2.call(this, _file);
+                      };
+                    }
+                  }),
+                  1
+                );
+            }
+            return old.call(this, file, openState);
+          };
+        }
+      })
+    );
+  }
+  async loadSettings() {
+    this.settings = Object.assign(
+      {},
+      DEFAULT_SETTINGS,
+      await this.loadData()
+    );
+  }
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
+  async checkDayChange() {
+    const currentDay = require$$0.moment().local().format("YYYY-MM-DD");
+    if (currentDay !== this.lastCheckedDay) {
+      this.lastCheckedDay = currentDay;
+      if (this.settings.createAndOpenOnStartup) {
+        await this.ensureTodaysDailyNoteExists();
+      }
+      const dailyNoteLeaves = this.app.workspace.getLeavesOfType(DAILY_NOTE_VIEW_TYPE);
+      if (dailyNoteLeaves.length > 0) {
+        for (const leaf of dailyNoteLeaves) {
+          const view2 = leaf.view;
+          if (view2) {
+            view2.refreshForNewDay();
+          }
+        }
+      }
+    }
+  }
+}
+module.exports = DailyNoteViewPlugin;
