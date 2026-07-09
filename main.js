@@ -4064,6 +4064,7 @@ class DailyNoteViewPlugin extends require$$0.Plugin {
   constructor() {
     super(...arguments);
     this.intentionalActiveChange = false;
+    this.forceEmbeddedEvent = false;
   }
   async onload() {
     this.addSettingTab(new DailyNoteSettingTab(this.app, this));
@@ -4186,6 +4187,17 @@ class DailyNoteViewPlugin extends require$$0.Plugin {
     let layoutChanging = false;
     let lastActiveFilePath = null;
     const uninstaller = around(require$$0.Workspace.prototype, {
+      trigger(old) {
+        return function(name, ...args) {
+          if (!plugin.forceEmbeddedEvent && (name === "file-open" || name === "active-leaf-change")) {
+            const leaf = name === "active-leaf-change" ? args[0] : this.activeLeaf;
+            if (leaf && isDailyNoteLeaf(leaf)) {
+              return;
+            }
+          }
+          return old.call(this, name, ...args);
+        };
+      },
       getActiveViewOfType: (next) => function(t) {
         const result = next.call(this, t);
         if (!result) {
@@ -4243,8 +4255,10 @@ class DailyNoteViewPlugin extends require$$0.Plugin {
             const activePath = (activeFile == null ? void 0 : activeFile.path) ?? null;
             if (intentional && activePath !== lastActiveFilePath) {
               lastActiveFilePath = activePath;
+              plugin.forceEmbeddedEvent = true;
               this.trigger("active-leaf-change", e);
               this.trigger("file-open", activeFile);
+              plugin.forceEmbeddedEvent = false;
             }
           }
           return;

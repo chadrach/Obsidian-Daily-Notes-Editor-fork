@@ -41,6 +41,11 @@ export default class DailyNoteViewPlugin extends Plugin {
     // happens while a note is loading.
     intentionalActiveChange = false;
 
+    // Set to true only while we are deliberately emitting active-leaf-change /
+    // file-open for an embedded note, so the trigger patch lets those through
+    // while suppressing the native events fired as notes load.
+    forceEmbeddedEvent = false;
+
     settings: DailyNoteSettings;
 
     async onload() {
@@ -202,6 +207,28 @@ export default class DailyNoteViewPlugin extends Plugin {
         // we don't re-fire events when the same note is re-activated.
         let lastActiveFilePath: string | null = null;
         const uninstaller = around(Workspace.prototype, {
+            trigger(old: any) {
+                return function (name: string, ...args: any[]) {
+                    // As embedded note editors load, Obsidian briefly makes them
+                    // active and fires active-leaf-change/file-open for an
+                    // off-screen note, which makes active-file followers (Bases,
+                    // Calendar) flicker. Drop those incidental events; our own
+                    // deliberate updates set forceEmbeddedEvent to pass through.
+                    if (
+                        !plugin.forceEmbeddedEvent &&
+                        (name === "file-open" || name === "active-leaf-change")
+                    ) {
+                        const leaf =
+                            name === "active-leaf-change"
+                                ? args[0]
+                                : this.activeLeaf;
+                        if (leaf && isDailyNoteLeaf(leaf)) {
+                            return;
+                        }
+                    }
+                    return old.call(this, name, ...args);
+                };
+            },
             getActiveViewOfType: (next: any) =>
                 function (t: any) {
                     const result = next.call(this, t);
@@ -295,8 +322,10 @@ export default class DailyNoteViewPlugin extends Plugin {
                                 activePath !== lastActiveFilePath
                             ) {
                                 lastActiveFilePath = activePath;
+                                plugin.forceEmbeddedEvent = true;
                                 this.trigger("active-leaf-change", e);
                                 this.trigger("file-open", activeFile);
+                                plugin.forceEmbeddedEvent = false;
                             }
                         }
                         return;
