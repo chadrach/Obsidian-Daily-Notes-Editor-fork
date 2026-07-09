@@ -289,6 +289,7 @@
                 // Make it the active leaf so Obsidian renders the cursor;
                 // editor.focus() alone doesn't mark the leaf active, so an
                 // already-rendered note would get focus but show no cursor.
+                plugin.intentionalActiveChange = true;
                 plugin.app.workspace.setActiveLeaf(targetLeaf, { focus: true });
                 const editor = targetLeaf.view.editor;
                 editor.focus();
@@ -394,13 +395,12 @@
         const path = getTopVisibleNotePath();
         if (!path) return;
 
-        const activeFile = plugin.app.workspace.getActiveFile();
-        if (activeFile && activeFile.path === path) return;
-
         const targetLeaf = findEmbeddedLeaf(path);
         if (targetLeaf) {
-            // focus: false keeps the user's text cursor where it is while still
-            // updating the active file/editor.
+            // A deliberate activation: announce it (the patch still dedupes by
+            // file path). focus: false keeps the user's text cursor where it is
+            // while still updating the active file/editor.
+            plugin.intentionalActiveChange = true;
             plugin.app.workspace.setActiveLeaf(targetLeaf, { focus: false });
         }
     }

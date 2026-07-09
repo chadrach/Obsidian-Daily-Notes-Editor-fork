@@ -136,6 +136,7 @@ class DailyNoteEditor extends nosuper(require$$0.HoverPopover) {
   _setActive(evt) {
     evt.preventDefault();
     evt.stopPropagation();
+    this.plugin.intentionalActiveChange = true;
     this.plugin.app.workspace.setActiveLeaf(this.leaves()[0], { focus: true });
   }
   getDefaultMode() {
@@ -1299,9 +1300,10 @@ function findAdjacentLeaf(app2, currentLeaf, direction) {
   const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
   return targetIndex >= 0 && targetIndex < dailyNoteLeaves.length ? dailyNoteLeaves[targetIndex] : null;
 }
-function navigateToAdjacentLeaf(app2, currentLeaf, direction) {
+function navigateToAdjacentLeaf(app2, plugin, currentLeaf, direction) {
   const targetLeaf = findAdjacentLeaf(app2, currentLeaf, direction);
   if (!targetLeaf) return false;
+  plugin.intentionalActiveChange = true;
   app2.workspace.setActiveLeaf(targetLeaf, { focus: true });
   const editor = getEditor(targetLeaf);
   if (!editor) return false;
@@ -1364,7 +1366,7 @@ function createUpDownNavigationExtension(options) {
         const currentLeaf = infoView == null ? void 0 : infoView.leaf;
         const currentFile = (_a = currentLeaf == null ? void 0 : currentLeaf.view) == null ? void 0 : _a.file;
         if (currentFile && isAtFirstVisibleLine(view2, currentFile, app2, plugin)) {
-          if (currentLeaf && navigateToAdjacentLeaf(app2, currentLeaf, "up")) {
+          if (currentLeaf && navigateToAdjacentLeaf(app2, plugin, currentLeaf, "up")) {
             return true;
           }
         }
@@ -1381,7 +1383,7 @@ function createUpDownNavigationExtension(options) {
         const currentLeaf = infoView == null ? void 0 : infoView.leaf;
         const lastLineNumber = view2.state.doc.lines;
         if (line.number === lastLineNumber && pos === line.to) {
-          if (currentLeaf && navigateToAdjacentLeaf(app2, currentLeaf, "down")) {
+          if (currentLeaf && navigateToAdjacentLeaf(app2, plugin, currentLeaf, "down")) {
             return true;
           }
         }
@@ -2178,6 +2180,7 @@ function instance$1($$self, $$props, $$invalidate) {
     if (isDestroying) return;
     try {
       [createdLeaf] = spawnLeafView(plugin, editorEl, leaf);
+      createdLeaf.parentLeaf = leaf;
       createdLeaf.setPinned(true);
       const showBacklinks = !plugin.settings.hideBacklinks && fileHasBacklinks(plugin.app, file);
       createdLeaf.setViewState({
@@ -2198,7 +2201,6 @@ function instance$1($$self, $$props, $$invalidate) {
           }
         }
       });
-      createdLeaf.parentLeaf = leaf;
       $$invalidate(3, rendered = true);
       if (autoFocus) {
         window.setTimeout(
@@ -3376,6 +3378,7 @@ function instance($$self, $$props, $$invalidate) {
         var _a, _b;
         const targetLeaf = findEmbeddedLeaf(file.path);
         if (targetLeaf && targetLeaf.view instanceof require$$0.MarkdownView) {
+          $$invalidate(0, plugin.intentionalActiveChange = true, plugin);
           plugin.app.workspace.setActiveLeaf(targetLeaf, { focus: true });
           const editor = targetLeaf.view.editor;
           editor.focus();
@@ -3454,10 +3457,9 @@ function instance($$self, $$props, $$invalidate) {
     }
     const path = getTopVisibleNotePath();
     if (!path) return;
-    const activeFile = plugin.app.workspace.getActiveFile();
-    if (activeFile && activeFile.path === path) return;
     const targetLeaf = findEmbeddedLeaf(path);
     if (targetLeaf) {
+      $$invalidate(0, plugin.intentionalActiveChange = true, plugin);
       plugin.app.workspace.setActiveLeaf(targetLeaf, { focus: false });
     }
   }
@@ -4059,6 +4061,10 @@ class SelectTargetModal extends require$$0.Modal {
   }
 }
 class DailyNoteViewPlugin extends require$$0.Plugin {
+  constructor() {
+    super(...arguments);
+    this.intentionalActiveChange = false;
+  }
   async onload() {
     this.addSettingTab(new DailyNoteSettingTab(this.app, this));
     await this.loadSettings();
@@ -4176,6 +4182,7 @@ class DailyNoteViewPlugin extends require$$0.Plugin {
     );
   }
   patchWorkspace() {
+    const plugin = this;
     let layoutChanging = false;
     let lastActiveFilePath = null;
     const uninstaller = around(require$$0.Workspace.prototype, {
@@ -4224,6 +4231,8 @@ class DailyNoteViewPlugin extends require$$0.Plugin {
         };
       },
       setActiveLeaf: (next) => function(e, t) {
+        const intentional = plugin.intentionalActiveChange;
+        plugin.intentionalActiveChange = false;
         if (e.parentLeaf) {
           e.parentLeaf.activeTime = 17e11;
           next.call(this, e.parentLeaf, t);
@@ -4232,7 +4241,7 @@ class DailyNoteViewPlugin extends require$$0.Plugin {
             e.parentLeaf.view.editMode = e.view;
             const activeFile = e.view.file ?? null;
             const activePath = (activeFile == null ? void 0 : activeFile.path) ?? null;
-            if (activePath !== lastActiveFilePath) {
+            if (intentional && activePath !== lastActiveFilePath) {
               lastActiveFilePath = activePath;
               this.trigger("active-leaf-change", e);
               this.trigger("file-open", activeFile);

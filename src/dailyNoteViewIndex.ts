@@ -35,6 +35,12 @@ export default class DailyNoteViewPlugin extends Plugin {
     lastActiveFile: TFile;
     private lastCheckedDay: string;
 
+    // Set to true by deliberate activations (scroll, click, arrow-nav) right
+    // before calling setActiveLeaf, so the workspace patch only announces the
+    // active-note change for those — never for the incidental activation that
+    // happens while a note is loading.
+    intentionalActiveChange = false;
+
     settings: DailyNoteSettings;
 
     async onload() {
@@ -190,6 +196,7 @@ export default class DailyNoteViewPlugin extends Plugin {
     }
 
     patchWorkspace() {
+        const plugin = this;
         let layoutChanging = false;
         // Tracks the file of the last embedded note we announced as active, so
         // we don't re-fire events when the same note is re-activated.
@@ -259,6 +266,11 @@ export default class DailyNoteViewPlugin extends Plugin {
             },
             setActiveLeaf: (next: any) =>
                 function (e: WorkspaceLeaf, t?: any) {
+                    // Consume the "deliberate activation" flag exactly once per
+                    // setActiveLeaf call.
+                    const intentional = plugin.intentionalActiveChange;
+                    plugin.intentionalActiveChange = false;
+
                     if ((e as any).parentLeaf) {
                         (e as any).parentLeaf.activeTime = 1700000000000;
 
@@ -270,12 +282,18 @@ export default class DailyNoteViewPlugin extends Plugin {
                             // Because we redirect activation to the (already
                             // active) parent leaf, Obsidian fires no
                             // active-leaf-change/file-open for the embedded note.
-                            // Plugins that follow the active file (e.g. Bases)
-                            // would then never see which note is active. Emit the
-                            // events ourselves when the active note changes.
+                            // Plugins that follow the active file (e.g. Bases,
+                            // Calendar) would then never see which note is
+                            // active. Emit the events ourselves — but only for
+                            // deliberate activations, so the incidental
+                            // activation while a note is loading doesn't make it
+                            // briefly active and cause a visible flicker.
                             const activeFile = (e.view as any).file ?? null;
                             const activePath = activeFile?.path ?? null;
-                            if (activePath !== lastActiveFilePath) {
+                            if (
+                                intentional &&
+                                activePath !== lastActiveFilePath
+                            ) {
                                 lastActiveFilePath = activePath;
                                 this.trigger("active-leaf-change", e);
                                 this.trigger("file-open", activeFile);

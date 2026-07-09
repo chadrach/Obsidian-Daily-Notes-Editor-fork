@@ -178,6 +178,7 @@ export class DailyNoteEditor extends nosuper(HoverPopover) {
     _setActive(evt: MouseEvent) {
         evt.preventDefault();
         evt.stopPropagation();
+        this.plugin.intentionalActiveChange = true;
         this.plugin.app.workspace.setActiveLeaf(this.leaves()[0], {focus: true});
     }
 

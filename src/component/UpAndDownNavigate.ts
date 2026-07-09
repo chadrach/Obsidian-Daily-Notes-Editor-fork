@@ -94,13 +94,15 @@ function findAdjacentLeaf(
  */
 function navigateToAdjacentLeaf(
     app: App,
+    plugin: DailyNoteViewPlugin,
     currentLeaf: WorkspaceLeaf,
     direction: "up" | "down"
 ): boolean {
     const targetLeaf = findAdjacentLeaf(app, currentLeaf, direction);
     if (!targetLeaf) return false;
 
-    // Focus the target leaf
+    // Focus the target leaf (a deliberate activation, so announce it)
+    plugin.intentionalActiveChange = true;
     app.workspace.setActiveLeaf(targetLeaf, { focus: true });
 
     // Get the editor
@@ -222,7 +224,7 @@ export function createUpDownNavigationExtension(
                 ) {
                     if (
                         currentLeaf &&
-                        navigateToAdjacentLeaf(app, currentLeaf, "up")
+                        navigateToAdjacentLeaf(app, plugin, currentLeaf, "up")
                     ) {
                         return true;
                     }
@@ -252,7 +254,7 @@ export function createUpDownNavigationExtension(
                 if (line.number === lastLineNumber && pos === line.to) {
                     if (
                         currentLeaf &&
-                        navigateToAdjacentLeaf(app, currentLeaf, "down")
+                        navigateToAdjacentLeaf(app, plugin, currentLeaf, "down")
                     ) {
                         return true;
                     }

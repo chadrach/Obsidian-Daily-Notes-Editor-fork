@@ -75,6 +75,11 @@
 
         try {
             [createdLeaf] = spawnLeafView(plugin, editorEl, leaf);
+            // Mark this as a daily-note child before loading its file, so any
+            // activation triggered while the note loads is routed through the
+            // workspace patch (which stays silent for non-deliberate changes)
+            // instead of firing a raw active-leaf-change/file-open event.
+            createdLeaf.parentLeaf = leaf;
             createdLeaf.setPinned(true);
 
             // Only show backlinks if the setting is enabled AND the file actually has backlinks
@@ -98,7 +103,6 @@
                     }
                 }
             });
-            createdLeaf.parentLeaf = leaf;
 
             rendered = true;
 
