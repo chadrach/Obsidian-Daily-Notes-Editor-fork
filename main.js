@@ -2809,7 +2809,7 @@ class FileManager {
 }
 function get_each_context(ctx, list, i) {
   const child_ctx = ctx.slice();
-  child_ctx[34] = list[i];
+  child_ctx[36] = list[i];
   return child_ctx;
 }
 function create_if_block_2(ctx) {
@@ -2874,7 +2874,7 @@ function create_each_block(key_1, ctx) {
     props: {
       file: (
         /*file*/
-        ctx[34]
+        ctx[36]
       ),
       plugin: (
         /*plugin*/
@@ -2888,14 +2888,14 @@ function create_each_block(key_1, ctx) {
         /*visibleNotes*/
         ctx[4].has(
           /*file*/
-          ctx[34].path
+          ctx[36].path
         )
       ),
       autoFocus: (
         /*isToday*/
         ctx[14](
           /*file*/
-          ctx[34]
+          ctx[36]
         )
       )
     }
@@ -2903,9 +2903,9 @@ function create_each_block(key_1, ctx) {
   function inview_change_handler(...args) {
     return (
       /*inview_change_handler*/
-      ctx[25](
+      ctx[26](
         /*file*/
-        ctx[34],
+        ctx[36],
         ...args
       )
     );
@@ -2942,8 +2942,8 @@ function create_each_block(key_1, ctx) {
       ctx = new_ctx;
       const dailynote_changes = {};
       if (dirty[0] & /*renderedFiles*/
-      64) dailynote_changes.file = /*file*/
-      ctx[34];
+      32) dailynote_changes.file = /*file*/
+      ctx[36];
       if (dirty[0] & /*plugin*/
       1) dailynote_changes.plugin = /*plugin*/
       ctx[0];
@@ -2951,16 +2951,16 @@ function create_each_block(key_1, ctx) {
       2) dailynote_changes.leaf = /*leaf*/
       ctx[1];
       if (dirty[0] & /*visibleNotes, renderedFiles*/
-      80) dailynote_changes.shouldRender = /*visibleNotes*/
+      48) dailynote_changes.shouldRender = /*visibleNotes*/
       ctx[4].has(
         /*file*/
-        ctx[34].path
+        ctx[36].path
       );
       if (dirty[0] & /*renderedFiles*/
-      64) dailynote_changes.autoFocus = /*isToday*/
+      32) dailynote_changes.autoFocus = /*isToday*/
       ctx[14](
         /*file*/
-        ctx[34]
+        ctx[36]
       );
       dailynote.$set(dailynote_changes);
       if (inview_action && is_function(inview_action.update) && dirty[0] & /*leaf*/
@@ -3011,19 +3011,8 @@ function create_if_block(ctx) {
   };
 }
 function create_fragment(ctx) {
-  var _a;
   let div1;
   let t0;
-  let show_if = (
-    /*selectionMode*/
-    ctx[3] === "daily" && !/*fileManager*/
-    ((_a = ctx[5]) == null ? void 0 : _a.hasCurrentDayNote()) && /*selectedRange*/
-    (ctx[2] === "all" || /*selectedRange*/
-    ctx[2] === "week" || /*selectedRange*/
-    ctx[2] === "month" || /*selectedRange*/
-    ctx[2] === "year" || /*selectedRange*/
-    ctx[2] === "quarter")
-  );
   let t1;
   let each_blocks = [];
   let each_1_lookup = /* @__PURE__ */ new Map();
@@ -3036,16 +3025,25 @@ function create_fragment(ctx) {
   let dispose;
   let if_block0 = (
     /*renderedFiles*/
-    ctx[6].length === 0 && create_if_block_2()
+    ctx[5].length === 0 && create_if_block_2()
   );
-  let if_block1 = show_if && create_if_block_1(ctx);
+  let if_block1 = (
+    /*selectionMode*/
+    ctx[3] === "daily" && !/*hasTodayNote*/
+    ctx[8] && /*selectedRange*/
+    (ctx[2] === "all" || /*selectedRange*/
+    ctx[2] === "week" || /*selectedRange*/
+    ctx[2] === "month" || /*selectedRange*/
+    ctx[2] === "year" || /*selectedRange*/
+    ctx[2] === "quarter") && create_if_block_1(ctx)
+  );
   let each_value = ensure_array_like(
     /*renderedFiles*/
-    ctx[6]
+    ctx[5]
   );
   const get_key = (ctx2) => (
     /*file*/
-    ctx2[34].path
+    ctx2[36].path
   );
   for (let i = 0; i < each_value.length; i += 1) {
     let child_ctx = get_each_context(ctx, each_value, i);
@@ -3053,7 +3051,7 @@ function create_fragment(ctx) {
     each_1_lookup.set(key, each_blocks[i] = create_each_block(key, child_ctx));
   }
   let if_block2 = !/*hasMore*/
-  ctx[7] && create_if_block();
+  ctx[6] && create_if_block();
   return {
     c() {
       div1 = element("div");
@@ -3084,7 +3082,7 @@ function create_fragment(ctx) {
       }
       append(div1, t2);
       append(div1, div0);
-      ctx[26](div0);
+      ctx[27](div0);
       append(div1, t3);
       if (if_block2) if_block2.m(div1, null);
       current = true;
@@ -3117,10 +3115,9 @@ function create_fragment(ctx) {
       }
     },
     p(ctx2, dirty) {
-      var _a2;
       if (
         /*renderedFiles*/
-        ctx2[6].length === 0
+        ctx2[5].length === 0
       ) {
         if (if_block0) ;
         else {
@@ -3132,16 +3129,16 @@ function create_fragment(ctx) {
         if_block0.d(1);
         if_block0 = null;
       }
-      if (dirty[0] & /*selectionMode, fileManager, selectedRange*/
-      44) show_if = /*selectionMode*/
-      ctx2[3] === "daily" && !/*fileManager*/
-      ((_a2 = ctx2[5]) == null ? void 0 : _a2.hasCurrentDayNote()) && /*selectedRange*/
-      (ctx2[2] === "all" || /*selectedRange*/
-      ctx2[2] === "week" || /*selectedRange*/
-      ctx2[2] === "month" || /*selectedRange*/
-      ctx2[2] === "year" || /*selectedRange*/
-      ctx2[2] === "quarter");
-      if (show_if) {
+      if (
+        /*selectionMode*/
+        ctx2[3] === "daily" && !/*hasTodayNote*/
+        ctx2[8] && /*selectedRange*/
+        (ctx2[2] === "all" || /*selectedRange*/
+        ctx2[2] === "week" || /*selectedRange*/
+        ctx2[2] === "month" || /*selectedRange*/
+        ctx2[2] === "year" || /*selectedRange*/
+        ctx2[2] === "quarter")
+      ) {
         if (if_block1) {
           if_block1.p(ctx2, dirty);
         } else {
@@ -3154,10 +3151,10 @@ function create_fragment(ctx) {
         if_block1 = null;
       }
       if (dirty[0] & /*leaf, handleNoteVisibilityChange, renderedFiles, plugin, visibleNotes, isToday*/
-      24659) {
+      24627) {
         each_value = ensure_array_like(
           /*renderedFiles*/
-          ctx2[6]
+          ctx2[5]
         );
         group_outros();
         each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx2, each_value, each_1_lookup, div1, outro_and_destroy_block, create_each_block, t2, get_each_context);
@@ -3169,7 +3166,7 @@ function create_fragment(ctx) {
         ctx2[1].view.containerEl
       ) });
       if (!/*hasMore*/
-      ctx2[7]) {
+      ctx2[6]) {
         if (if_block2) ;
         else {
           if_block2 = create_if_block();
@@ -3203,7 +3200,7 @@ function create_fragment(ctx) {
       for (let i = 0; i < each_blocks.length; i += 1) {
         each_blocks[i].d();
       }
-      ctx[26](null);
+      ctx[27](null);
       if (if_block2) if_block2.d();
       mounted = false;
       run_all$1(dispose);
@@ -3228,6 +3225,10 @@ function instance($$self, $$props, $$invalidate) {
   let firstLoaded = true;
   let loaderRef;
   let fileManager;
+  let hasTodayNote = true;
+  function updateHasTodayNote() {
+    $$invalidate(8, hasTodayNote = fileManager ? fileManager.hasCurrentDayNote() : true);
+  }
   function handleScroll() {
     const el = leaf.view.contentEl;
     if (!el || !hasMore) return;
@@ -3237,10 +3238,11 @@ function instance($$self, $$props, $$invalidate) {
   }
   onMount(() => {
     var _a;
-    $$invalidate(5, fileManager = new FileManager(fileManagerOptions));
+    $$invalidate(25, fileManager = new FileManager(fileManagerOptions));
     $$invalidate(24, filteredFiles = fileManager.getFilteredFiles());
-    $$invalidate(7, hasMore = filteredFiles.length > 0);
+    $$invalidate(6, hasMore = filteredFiles.length > 0);
     startFillViewport();
+    updateHasTodayNote();
     updateTitleElement();
     (_a = leaf.view.contentEl) === null || _a === void 0 ? void 0 : _a.addEventListener("scroll", handleScroll, { passive: true });
   });
@@ -3289,9 +3291,9 @@ function instance($$self, $$props, $$invalidate) {
     if (leaf.height === 0) return;
     if (!fileManager || !hasMore) return;
     if (filteredFiles.length === 0) {
-      $$invalidate(7, hasMore = false);
+      $$invalidate(6, hasMore = false);
     } else {
-      $$invalidate(6, renderedFiles = [...renderedFiles, ...filteredFiles.splice(0, size)]);
+      $$invalidate(5, renderedFiles = [...renderedFiles, ...filteredFiles.splice(0, size)]);
       if (firstLoaded) {
         window.setTimeout(
           () => {
@@ -3325,20 +3327,22 @@ function instance($$self, $$props, $$invalidate) {
     return __awaiter(this, void 0, void 0, function* () {
       const newNote = yield fileManager.createNewDailyNote();
       if (newNote) {
-        $$invalidate(6, renderedFiles = [newNote, ...renderedFiles]);
+        $$invalidate(5, renderedFiles = [newNote, ...renderedFiles]);
         visibleNotes.add(newNote.path);
         $$invalidate(4, visibleNotes);
+        updateHasTodayNote();
       }
     });
   }
   function refresh() {
     fileManager.forceRefresh();
-    $$invalidate(6, renderedFiles = []);
+    $$invalidate(5, renderedFiles = []);
     visibleNotes.clear();
     $$invalidate(24, filteredFiles = fileManager.getFilteredFiles());
-    $$invalidate(7, hasMore = filteredFiles.length > 0);
+    $$invalidate(6, hasMore = filteredFiles.length > 0);
     firstLoaded = true;
     startFillViewport();
+    updateHasTodayNote();
   }
   function focusTodayNote() {
     if (selectionMode !== "daily") return;
@@ -3346,13 +3350,14 @@ function instance($$self, $$props, $$invalidate) {
     fileManager.checkDailyNote();
     const hasToday = fileManager.hasCurrentDayNote();
     if (!hadToday && hasToday) {
-      $$invalidate(6, renderedFiles = []);
+      $$invalidate(5, renderedFiles = []);
       visibleNotes.clear();
       $$invalidate(24, filteredFiles = fileManager.getFilteredFiles());
-      $$invalidate(7, hasMore = filteredFiles.length > 0);
+      $$invalidate(6, hasMore = filteredFiles.length > 0);
       firstLoaded = true;
       startFillViewport();
     }
+    updateHasTodayNote();
     if (!hasToday) return;
     const todayNote = getDailyNote_1(require$$0.moment(), getAllDailyNotes_1());
     if (!todayNote) return;
@@ -3372,6 +3377,7 @@ function instance($$self, $$props, $$invalidate) {
           }
         });
         if (targetLeaf && targetLeaf.view instanceof require$$0.MarkdownView) {
+          plugin.app.workspace.setActiveLeaf(targetLeaf, { focus: true });
           const editor = targetLeaf.view.editor;
           editor.focus();
           editor.setCursor(editor.lineCount(), 0);
@@ -3385,7 +3391,7 @@ function instance($$self, $$props, $$invalidate) {
   }
   function tick2() {
     check();
-    $$invalidate(6, renderedFiles), $$invalidate(5, fileManager), $$invalidate(2, selectedRange), $$invalidate(15, customRange), $$invalidate(3, selectionMode), $$invalidate(16, target), $$invalidate(17, timeField), $$invalidate(4, visibleNotes), $$invalidate(24, filteredFiles);
+    $$invalidate(5, renderedFiles), $$invalidate(25, fileManager), $$invalidate(2, selectedRange), $$invalidate(15, customRange), $$invalidate(3, selectionMode), $$invalidate(16, target), $$invalidate(17, timeField), $$invalidate(4, visibleNotes), $$invalidate(24, filteredFiles);
   }
   function check() {
     const hadDailyNote = fileManager.hasCurrentDayNote();
@@ -3394,36 +3400,39 @@ function instance($$self, $$props, $$invalidate) {
     if (hadDailyNote !== hasDailyNote || selectionMode === "daily" && selectedRange !== "all") {
       $$invalidate(24, filteredFiles = fileManager.getFilteredFiles());
       if (selectionMode === "daily") {
-        $$invalidate(6, renderedFiles = []);
+        $$invalidate(5, renderedFiles = []);
         visibleNotes.clear();
-        $$invalidate(7, hasMore = filteredFiles.length > 0);
+        $$invalidate(6, hasMore = filteredFiles.length > 0);
         firstLoaded = true;
         startFillViewport();
       }
     }
+    updateHasTodayNote();
   }
   function fileCreate(file) {
     fileManager.fileCreate(file);
     if (selectionMode === "daily") {
       const filteredFiles2 = fileManager.getFilteredFiles();
       if (filteredFiles2.some((f) => f.basename === file.basename) && !renderedFiles.some((f) => f.basename === file.basename)) {
-        $$invalidate(6, renderedFiles = [file, ...renderedFiles]);
+        $$invalidate(5, renderedFiles = [file, ...renderedFiles]);
         visibleNotes.add(file.path);
         $$invalidate(4, visibleNotes);
       }
     } else {
-      $$invalidate(6, renderedFiles = fileManager.getFilteredFiles().slice(0, renderedFiles.length));
+      $$invalidate(5, renderedFiles = fileManager.getFilteredFiles().slice(0, renderedFiles.length));
     }
+    updateHasTodayNote();
   }
   function fileDelete(file) {
     fileManager.fileDelete(file);
-    $$invalidate(6, renderedFiles = renderedFiles.filter((dailyNote) => {
+    $$invalidate(5, renderedFiles = renderedFiles.filter((dailyNote) => {
       return dailyNote.basename !== file.basename;
     }));
     if (visibleNotes.has(file.path)) {
       visibleNotes.delete(file.path);
       $$invalidate(4, visibleNotes);
     }
+    updateHasTodayNote();
   }
   function handleNoteVisibilityChange(file, isVisible) {
     if (isVisible) {
@@ -3443,7 +3452,7 @@ function instance($$self, $$props, $$invalidate) {
   function div0_binding($$value) {
     binding_callbacks$1[$$value ? "unshift" : "push"](() => {
       loaderRef = $$value;
-      $$invalidate(8, loaderRef);
+      $$invalidate(7, loaderRef);
     });
   }
   $$self.$$set = ($$props2) => {
@@ -3469,7 +3478,7 @@ function instance($$self, $$props, $$invalidate) {
       };
     }
     if ($$self.$$.dirty[0] & /*fileManager, selectedRange, customRange, selectionMode, target, timeField, visibleNotes, filteredFiles*/
-    17006652) {
+    50561052) {
       if (fileManager && (selectedRange !== fileManager.options.timeRange || customRange !== fileManager.options.customRange || selectionMode !== fileManager.options.mode || target !== fileManager.options.target || timeField !== fileManager.options.timeField)) {
         fileManager.updateOptions({
           timeRange: selectedRange,
@@ -3478,12 +3487,13 @@ function instance($$self, $$props, $$invalidate) {
           target,
           timeField
         });
-        $$invalidate(6, renderedFiles = []);
+        $$invalidate(5, renderedFiles = []);
         visibleNotes.clear();
         $$invalidate(24, filteredFiles = fileManager.getFilteredFiles());
-        $$invalidate(7, hasMore = filteredFiles.length > 0);
+        $$invalidate(6, hasMore = filteredFiles.length > 0);
         firstLoaded = true;
         startFillViewport();
+        updateHasTodayNote();
         updateTitleElement();
       }
     }
@@ -3494,10 +3504,10 @@ function instance($$self, $$props, $$invalidate) {
     selectedRange,
     selectionMode,
     visibleNotes,
-    fileManager,
     renderedFiles,
     hasMore,
     loaderRef,
+    hasTodayNote,
     startFillViewport,
     stopFillViewport,
     infiniteHandler,
@@ -3514,6 +3524,7 @@ function instance($$self, $$props, $$invalidate) {
     fileCreate,
     fileDelete,
     filteredFiles,
+    fileManager,
     inview_change_handler,
     div0_binding
   ];

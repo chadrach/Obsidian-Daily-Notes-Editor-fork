@@ -36,6 +36,16 @@
     // Create the file manager
     let fileManager: FileManager;
 
+    // Reactive mirror of fileManager.hasCurrentDayNote(). A bare method call in
+    // the template isn't tracked by Svelte, so the "create today's note" banner
+    // would never hide once the note was created. Keep this in sync whenever the
+    // daily-note state can change.
+    let hasTodayNote = true;
+
+    function updateHasTodayNote() {
+        hasTodayNote = fileManager ? fileManager.hasCurrentDayNote() : true;
+    }
+
     $: fileManagerOptions = {
         mode: selectionMode,
         target: target,
@@ -66,6 +76,7 @@
         hasMore = filteredFiles.length > 0;
         firstLoaded = true;
         startFillViewport();
+        updateHasTodayNote();
 
         // Update the title element with the new range information
         updateTitleElement();
@@ -88,6 +99,7 @@
         filteredFiles = fileManager.getFilteredFiles();
         hasMore = filteredFiles.length > 0;
         startFillViewport();
+        updateHasTodayNote();
 
         // Initialize the title element
         updateTitleElement();
@@ -203,6 +215,7 @@
             // Automatically mark the new note as visible
             visibleNotes.add(newNote.path);
             visibleNotes = visibleNotes;
+            updateHasTodayNote();
         }
     }
 
@@ -214,6 +227,7 @@
         hasMore = filteredFiles.length > 0;
         firstLoaded = true;
         startFillViewport();
+        updateHasTodayNote();
     }
 
     // Focus today's daily note and move the cursor to the end of the document.
@@ -236,6 +250,7 @@
             firstLoaded = true;
             startFillViewport();
         }
+        updateHasTodayNote();
 
         if (!hasToday) return;
 
@@ -266,6 +281,10 @@
             });
 
             if (targetLeaf && targetLeaf.view instanceof MarkdownView) {
+                // Make it the active leaf so Obsidian renders the cursor;
+                // editor.focus() alone doesn't mark the leaf active, so an
+                // already-rendered note would get focus but show no cursor.
+                plugin.app.workspace.setActiveLeaf(targetLeaf, { focus: true });
                 const editor = targetLeaf.view.editor;
                 editor.focus();
                 editor.setCursor(editor.lineCount(), 0);
@@ -306,6 +325,7 @@
                 startFillViewport();
             }
         }
+        updateHasTodayNote();
     }
 
     export function fileCreate(file: TFile) {
@@ -326,6 +346,7 @@
             // For folder and tag modes, we can simply update the rendered files
             renderedFiles = fileManager.getFilteredFiles().slice(0, renderedFiles.length);
         }
+        updateHasTodayNote();
     }
 
     export function fileDelete(file: TFile) {
@@ -341,6 +362,7 @@
             visibleNotes.delete(file.path);
             visibleNotes = visibleNotes;
         }
+        updateHasTodayNote();
     }
 
     // Handle note visibility change
@@ -368,7 +390,7 @@
             </div>
         </div>
     {/if}
-    {#if selectionMode === "daily" && !fileManager?.hasCurrentDayNote() && (selectedRange === 'all' || selectedRange === 'week' || selectedRange === 'month' || selectedRange === 'year' || selectedRange === 'quarter')}
+    {#if selectionMode === "daily" && !hasTodayNote && (selectedRange === 'all' || selectedRange === 'week' || selectedRange === 'month' || selectedRange === 'year' || selectedRange === 'quarter')}
         <div class="dn-blank-day" on:click={createNewDailyNote} aria-hidden="true">
             <div class="dn-blank-day-text">
                 Create a daily note for today ✍
