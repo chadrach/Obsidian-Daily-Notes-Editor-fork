@@ -3370,11 +3370,13 @@ function instance($$self, $$props, $$invalidate) {
       () => {
         var _a, _b;
         let targetLeaf = null;
-        plugin.app.workspace.iterateAllLeaves((l) => {
+        DailyNoteEditor.iteratePopoverLeaves(plugin.app.workspace, (l) => {
           var _a2;
-          if (isDailyNoteLeaf(l) && l.view instanceof require$$0.MarkdownView && ((_a2 = l.view.file) === null || _a2 === void 0 ? void 0 : _a2.path) === file.path) {
+          if (l.view instanceof require$$0.MarkdownView && ((_a2 = l.view.file) === null || _a2 === void 0 ? void 0 : _a2.path) === file.path) {
             targetLeaf = l;
+            return true;
           }
+          return false;
         });
         if (targetLeaf && targetLeaf.view instanceof require$$0.MarkdownView) {
           plugin.app.workspace.setActiveLeaf(targetLeaf, { focus: true });

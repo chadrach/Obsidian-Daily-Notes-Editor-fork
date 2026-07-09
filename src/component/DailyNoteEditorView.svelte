@@ -6,7 +6,7 @@
     import { getAllDailyNotes, getDailyNote, getDateFromFile } from "obsidian-daily-notes-interface";
     import DailyNote from "./DailyNote.svelte";
     import { inview } from "svelte-inview";
-    import { isDailyNoteLeaf } from "../leafView";
+    import { DailyNoteEditor } from "../leafView";
     import { TimeRange, SelectionMode, TimeField } from "../types/time";
     import { onMount, onDestroy } from "svelte";
     import { FileManager, FileManagerOptions } from "../utils/fileManager";
@@ -264,20 +264,24 @@
         focusFileEditor(todayNote);
     }
 
-    // Find the editor leaf showing the given file and focus it, moving the
-    // cursor to the end. Retries a few times because the editor leaf may still
-    // be spawning when the note was just made visible.
+    // Find the embedded editor showing the given file and focus it, moving the
+    // cursor to the end. Retries a few times because the editor may still be
+    // spawning when the note was just made visible. Uses iteratePopoverLeaves
+    // (not workspace.iterateAllLeaves) because the embedded editors live in the
+    // plugin's own popover splits and aren't part of the normal workspace tree
+    // on current Obsidian versions.
     function focusFileEditor(file: TFile, attempts: number = 0) {
         window.setTimeout(() => {
             let targetLeaf: any = null;
-            plugin.app.workspace.iterateAllLeaves((l) => {
+            DailyNoteEditor.iteratePopoverLeaves(plugin.app.workspace, (l) => {
                 if (
-                    isDailyNoteLeaf(l) &&
                     l.view instanceof MarkdownView &&
                     l.view.file?.path === file.path
                 ) {
                     targetLeaf = l;
+                    return true;
                 }
+                return false;
             });
 
             if (targetLeaf && targetLeaf.view instanceof MarkdownView) {
