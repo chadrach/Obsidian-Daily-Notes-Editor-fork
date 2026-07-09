@@ -205,6 +205,16 @@
         }
     }
 
+    export function refresh() {
+        fileManager.forceRefresh();
+        renderedFiles = [];
+        visibleNotes.clear();
+        filteredFiles = fileManager.getFilteredFiles();
+        hasMore = filteredFiles.length > 0;
+        firstLoaded = true;
+        startFillViewport();
+    }
+
     export function tick() {
         // First check if we need to update for a new day
         check();

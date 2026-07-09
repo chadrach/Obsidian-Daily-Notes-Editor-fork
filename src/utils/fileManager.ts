@@ -523,6 +523,13 @@ export class FileManager {
         return this.hasCurrentDay;
     }
 
+    public forceRefresh(): void {
+        this.allFiles = [];
+        this.filteredFiles = [];
+        this.hasFetched = false;
+        this.fetchFiles();
+    }
+
     public updateOptions(options: Partial<FileManagerOptions>): void {
         this.options = { ...this.options, ...options };
 

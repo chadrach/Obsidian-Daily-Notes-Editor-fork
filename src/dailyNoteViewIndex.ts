@@ -44,7 +44,7 @@ export default class DailyNoteViewPlugin extends Plugin {
         this.patchWorkspaceLeaf();
         addIconList();
 
-        this.lastCheckedDay = moment().format("YYYY-MM-DD");
+        this.lastCheckedDay = moment().local().format("YYYY-MM-DD");
 
         // Register the up and down navigation extension
         this.settings.useArrowUpOrDownToNavigate &&
@@ -338,13 +338,14 @@ export default class DailyNoteViewPlugin extends Plugin {
     }
 
     private async checkDayChange(): Promise<void> {
-        const currentDay = moment().format("YYYY-MM-DD");
+        const currentDay = moment().local().format("YYYY-MM-DD");
 
         if (currentDay !== this.lastCheckedDay) {
             this.lastCheckedDay = currentDay;
-            console.log("Day changed, updating daily notes view");
 
-            await this.ensureTodaysDailyNoteExists();
+            if (this.settings.createAndOpenOnStartup) {
+                await this.ensureTodaysDailyNoteExists();
+            }
 
             const dailyNoteLeaves =
                 this.app.workspace.getLeavesOfType(DAILY_NOTE_VIEW_TYPE);

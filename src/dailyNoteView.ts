@@ -28,6 +28,7 @@ export class DailyNoteView extends ItemView {
     selectionMode: "daily" | "folder" | "tag" = "daily";
     target: string = "";
     timeField: TimeField = "mtime";
+    private timeFieldActionEl: HTMLElement | null = null;
 
     customRange: {
         start: Date;
@@ -96,6 +97,11 @@ export class DailyNoteView extends ItemView {
     setSelectionMode(mode: "daily" | "folder" | "tag", target: string = "") {
         this.selectionMode = mode;
         this.target = target;
+
+        // Show/hide sort order button based on mode
+        if (this.timeFieldActionEl) {
+            this.timeFieldActionEl.style.display = mode === "daily" ? "none" : "";
+        }
 
         if (this.view) {
             this.view.$set({
@@ -196,7 +202,7 @@ export class DailyNoteView extends ItemView {
             // do-nothing
         });
 
-        this.addAction("clock", "Select time field", (e) => {
+        this.timeFieldActionEl = this.addAction("arrow-up-down", "Sort order", (e) => {
             const menu = new Menu();
 
             // Add time field selection options
@@ -220,6 +226,10 @@ export class DailyNoteView extends ItemView {
 
             menu.showAtMouseEvent(e);
         });
+        // Hide sort order button in daily mode (it's only useful for folder/tag modes)
+        if (this.selectionMode === "daily") {
+            this.timeFieldActionEl.style.display = "none";
+        }
 
         // Add action for selecting view mode
         this.addAction("layers-2", "Select view mode", (e) => {
@@ -341,19 +351,9 @@ export class DailyNoteView extends ItemView {
             menu.showAtMouseEvent(e as MouseEvent);
         });
 
-        this.addAction("refresh", "Refresh", () => {
+        this.addAction("refresh-cw", "Refresh", () => {
             if (this.view) {
-                // Tell the Svelte component to check for daily notes
-                this.view.check();
-
-                // Update the view to get the latest files
-                this.view.tick();
-
-                // Force a refresh of the file list
-                this.view.$set({
-                    selectedRange: this.selectedDaysRange,
-                    customRange: this.customRange,
-                });
+                this.view.refresh();
             }
         });
 
@@ -383,23 +383,8 @@ export class DailyNoteView extends ItemView {
      * This is called when the date changes (e.g., after midnight)
      */
     public refreshForNewDay(): void {
-        // If we're in daily note mode, we need to refresh the view
-        // to show the current day's note
-        if (this.selectionMode === "daily") {
-            // Reset the view properties to trigger a reload
-            if (this.view) {
-                // Tell the Svelte component to check for daily notes
-                this.view.check();
-
-                // Update the view to get the latest files
-                this.view.tick();
-
-                // Force a refresh of the file list
-                this.view.$set({
-                    selectedRange: this.selectedDaysRange,
-                    customRange: this.customRange,
-                });
-            }
+        if (this.selectionMode === "daily" && this.view) {
+            this.view.refresh();
         }
     }
 }
