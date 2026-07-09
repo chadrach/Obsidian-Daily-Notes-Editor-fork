@@ -33,6 +33,12 @@
     let firstLoaded = true;
     let loaderRef: HTMLDivElement;
 
+    // Active-leaf tracking: keep Obsidian's active file in sync with the note
+    // the user is looking at (topmost in view) or has the cursor in, so plugins
+    // that follow the active file (e.g. Bases) update correctly.
+    let activeUpdateHandle = 0;
+    let activeUpdateRespectFocus = true;
+
     // Create the file manager
     let fileManager: FileManager;
 
@@ -87,7 +93,11 @@
     // slow scrolling. This classic scroll listener ensures notes keep loading.
     function handleScroll() {
         const el = leaf.view.contentEl;
-        if (!el || !hasMore) return;
+        if (!el) return;
+        // The user is actively scrolling, so the in-view note wins over the
+        // cursor: update the active leaf without respecting focus.
+        scheduleActiveLeafUpdate(false);
+        if (!hasMore) return;
         // When within 1.5x viewport height of the bottom, load more
         if (el.scrollTop + el.clientHeight * 2.5 > el.scrollHeight) {
             infiniteHandler();
@@ -110,6 +120,7 @@
 
     onDestroy(() => {
         leaf.view.contentEl?.removeEventListener("scroll", handleScroll);
+        if (activeUpdateHandle) window.cancelAnimationFrame(activeUpdateHandle);
     });
 
     // Function to update the title element with range information
@@ -272,17 +283,7 @@
     // on current Obsidian versions.
     function focusFileEditor(file: TFile, attempts: number = 0) {
         window.setTimeout(() => {
-            let targetLeaf: any = null;
-            DailyNoteEditor.iteratePopoverLeaves(plugin.app.workspace, (l) => {
-                if (
-                    l.view instanceof MarkdownView &&
-                    l.view.file?.path === file.path
-                ) {
-                    targetLeaf = l;
-                    return true;
-                }
-                return false;
-            });
+            const targetLeaf = findEmbeddedLeaf(file.path);
 
             if (targetLeaf && targetLeaf.view instanceof MarkdownView) {
                 // Make it the active leaf so Obsidian renders the cursor;
@@ -297,6 +298,109 @@
                 focusFileEditor(file, attempts + 1);
             }
         }, 100);
+    }
+
+    // Find the embedded editor leaf that is showing the given file path.
+    function findEmbeddedLeaf(path: string): any {
+        let found: any = null;
+        DailyNoteEditor.iteratePopoverLeaves(plugin.app.workspace, (l) => {
+            if (l.view instanceof MarkdownView && l.view.file?.path === path) {
+                found = l;
+                return true;
+            }
+            return false;
+        });
+        return found;
+    }
+
+    // Determine which rendered note currently occupies the top of the viewport.
+    function getTopVisibleNotePath(): string | null {
+        const contentEl = leaf.view?.contentEl;
+        if (!contentEl) return null;
+
+        const containerRect = contentEl.getBoundingClientRect();
+        // The note crossing this line (a little below the top edge) is the one
+        // the user is reading.
+        const threshold = containerRect.top + 80;
+        const prefix = "dn-editor-";
+
+        let best: string | null = null;
+        let bestTop = -Infinity;
+        let fallback: string | null = null;
+        let fallbackTop = Infinity;
+
+        const containers =
+            contentEl.querySelectorAll<HTMLElement>(".daily-note-container");
+        containers.forEach((el) => {
+            const r = el.getBoundingClientRect();
+            // Skip notes fully outside the viewport
+            if (r.bottom <= containerRect.top || r.top >= containerRect.bottom) return;
+
+            const id = el.getAttribute("data-id");
+            if (!id || !id.startsWith(prefix)) return;
+            const path = id.slice(prefix.length);
+
+            // Prefer the lowest note whose top is still above the threshold line
+            if (r.top <= threshold && r.top > bestTop) {
+                best = path;
+                bestTop = r.top;
+            }
+            // Fallback: the highest visible note (e.g. when one note is taller
+            // than the whole viewport)
+            if (r.top < fallbackTop) {
+                fallback = path;
+                fallbackTop = r.top;
+            }
+        });
+
+        return best ?? fallback;
+    }
+
+    // Coalesce active-leaf updates to at most one per animation frame. A scroll
+    // update (respectFocus=false) takes precedence over a focus-respecting one.
+    function scheduleActiveLeafUpdate(respectFocus: boolean = true) {
+        if (activeUpdateHandle === 0) {
+            activeUpdateRespectFocus = respectFocus;
+            activeUpdateHandle = window.requestAnimationFrame(() => {
+                const rf = activeUpdateRespectFocus;
+                activeUpdateHandle = 0;
+                activeUpdateRespectFocus = true;
+                updateActiveLeaf(rf);
+            });
+        } else if (!respectFocus) {
+            activeUpdateRespectFocus = false;
+        }
+    }
+
+    // Point Obsidian's active leaf at the note the user is looking at, so
+    // active-file-following plugins stay in sync. When respectFocus is true, a
+    // note that already holds the cursor is left active (used during load and
+    // lazy render); a real scroll passes false so the in-view note wins.
+    function updateActiveLeaf(respectFocus: boolean) {
+        const workspace: any = plugin.app.workspace;
+
+        // Only act while this view is the active tab, so a background daily
+        // notes view never hijacks the active file.
+        if (workspace.activeLeaf !== leaf) return;
+
+        const contentEl = leaf.view?.contentEl;
+        if (respectFocus && contentEl) {
+            const activeEl = contentEl.ownerDocument.activeElement;
+            if (activeEl && contentEl.contains(activeEl)) return;
+        }
+
+        const path = getTopVisibleNotePath();
+        if (!path) return;
+
+        const activeFile = plugin.app.workspace.getActiveFile();
+        if (activeFile && activeFile.path === path) return;
+
+        const targetLeaf = findEmbeddedLeaf(path);
+        if (targetLeaf) {
+            // focus: false keeps the user's text cursor where it is while still
+            // updating the active file/editor.
+            plugin.app.workspace.setActiveLeaf(targetLeaf, { focus: false });
+        }
     }
 
     export function tick() {
@@ -377,6 +481,9 @@
             visibleNotes.delete(file.path);
         }
         visibleNotes = visibleNotes;
+        // Re-evaluate the active note as notes enter/leave view. Respect focus so
+        // this doesn't override a note the user is actively editing.
+        scheduleActiveLeafUpdate(true);
     }
 
     function isToday(file: TFile): boolean {

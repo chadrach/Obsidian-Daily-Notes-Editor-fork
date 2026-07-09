@@ -2809,7 +2809,7 @@ class FileManager {
 }
 function get_each_context(ctx, list, i) {
   const child_ctx = ctx.slice();
-  child_ctx[36] = list[i];
+  child_ctx[42] = list[i];
   return child_ctx;
 }
 function create_if_block_2(ctx) {
@@ -2874,7 +2874,7 @@ function create_each_block(key_1, ctx) {
     props: {
       file: (
         /*file*/
-        ctx[36]
+        ctx[42]
       ),
       plugin: (
         /*plugin*/
@@ -2888,14 +2888,14 @@ function create_each_block(key_1, ctx) {
         /*visibleNotes*/
         ctx[4].has(
           /*file*/
-          ctx[36].path
+          ctx[42].path
         )
       ),
       autoFocus: (
         /*isToday*/
         ctx[14](
           /*file*/
-          ctx[36]
+          ctx[42]
         )
       )
     }
@@ -2905,7 +2905,7 @@ function create_each_block(key_1, ctx) {
       /*inview_change_handler*/
       ctx[26](
         /*file*/
-        ctx[36],
+        ctx[42],
         ...args
       )
     );
@@ -2943,7 +2943,7 @@ function create_each_block(key_1, ctx) {
       const dailynote_changes = {};
       if (dirty[0] & /*renderedFiles*/
       32) dailynote_changes.file = /*file*/
-      ctx[36];
+      ctx[42];
       if (dirty[0] & /*plugin*/
       1) dailynote_changes.plugin = /*plugin*/
       ctx[0];
@@ -2954,13 +2954,13 @@ function create_each_block(key_1, ctx) {
       48) dailynote_changes.shouldRender = /*visibleNotes*/
       ctx[4].has(
         /*file*/
-        ctx[36].path
+        ctx[42].path
       );
       if (dirty[0] & /*renderedFiles*/
       32) dailynote_changes.autoFocus = /*isToday*/
       ctx[14](
         /*file*/
-        ctx[36]
+        ctx[42]
       );
       dailynote.$set(dailynote_changes);
       if (inview_action && is_function(inview_action.update) && dirty[0] & /*leaf*/
@@ -3043,7 +3043,7 @@ function create_fragment(ctx) {
   );
   const get_key = (ctx2) => (
     /*file*/
-    ctx2[36].path
+    ctx2[42].path
   );
   for (let i = 0; i < each_value.length; i += 1) {
     let child_ctx = get_each_context(ctx, each_value, i);
@@ -3224,6 +3224,8 @@ function instance($$self, $$props, $$invalidate) {
   let hasMore = true;
   let firstLoaded = true;
   let loaderRef;
+  let activeUpdateHandle = 0;
+  let activeUpdateRespectFocus = true;
   let fileManager;
   let hasTodayNote = true;
   function updateHasTodayNote() {
@@ -3231,7 +3233,9 @@ function instance($$self, $$props, $$invalidate) {
   }
   function handleScroll() {
     const el = leaf.view.contentEl;
-    if (!el || !hasMore) return;
+    if (!el) return;
+    scheduleActiveLeafUpdate(false);
+    if (!hasMore) return;
     if (el.scrollTop + el.clientHeight * 2.5 > el.scrollHeight) {
       infiniteHandler();
     }
@@ -3249,6 +3253,7 @@ function instance($$self, $$props, $$invalidate) {
   onDestroy(() => {
     var _a;
     (_a = leaf.view.contentEl) === null || _a === void 0 ? void 0 : _a.removeEventListener("scroll", handleScroll);
+    if (activeUpdateHandle) window.cancelAnimationFrame(activeUpdateHandle);
   });
   function updateTitleElement() {
     if (!leaf || !leaf.view || !leaf.view.titleEl) return;
@@ -3369,15 +3374,7 @@ function instance($$self, $$props, $$invalidate) {
     window.setTimeout(
       () => {
         var _a, _b;
-        let targetLeaf = null;
-        DailyNoteEditor.iteratePopoverLeaves(plugin.app.workspace, (l) => {
-          var _a2;
-          if (l.view instanceof require$$0.MarkdownView && ((_a2 = l.view.file) === null || _a2 === void 0 ? void 0 : _a2.path) === file.path) {
-            targetLeaf = l;
-            return true;
-          }
-          return false;
-        });
+        const targetLeaf = findEmbeddedLeaf(file.path);
         if (targetLeaf && targetLeaf.view instanceof require$$0.MarkdownView) {
           plugin.app.workspace.setActiveLeaf(targetLeaf, { focus: true });
           const editor = targetLeaf.view.editor;
@@ -3390,6 +3387,78 @@ function instance($$self, $$props, $$invalidate) {
       },
       100
     );
+  }
+  function findEmbeddedLeaf(path) {
+    let found = null;
+    DailyNoteEditor.iteratePopoverLeaves(plugin.app.workspace, (l) => {
+      var _a;
+      if (l.view instanceof require$$0.MarkdownView && ((_a = l.view.file) === null || _a === void 0 ? void 0 : _a.path) === path) {
+        found = l;
+        return true;
+      }
+      return false;
+    });
+    return found;
+  }
+  function getTopVisibleNotePath() {
+    var _a;
+    const contentEl = (_a = leaf.view) === null || _a === void 0 ? void 0 : _a.contentEl;
+    if (!contentEl) return null;
+    const containerRect = contentEl.getBoundingClientRect();
+    const threshold = containerRect.top + 80;
+    const prefix = "dn-editor-";
+    let best = null;
+    let bestTop = -Infinity;
+    let fallback = null;
+    let fallbackTop = Infinity;
+    const containers = contentEl.querySelectorAll(".daily-note-container");
+    containers.forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.bottom <= containerRect.top || r.top >= containerRect.bottom) return;
+      const id = el.getAttribute("data-id");
+      if (!id || !id.startsWith(prefix)) return;
+      const path = id.slice(prefix.length);
+      if (r.top <= threshold && r.top > bestTop) {
+        best = path;
+        bestTop = r.top;
+      }
+      if (r.top < fallbackTop) {
+        fallback = path;
+        fallbackTop = r.top;
+      }
+    });
+    return best !== null && best !== void 0 ? best : fallback;
+  }
+  function scheduleActiveLeafUpdate(respectFocus = true) {
+    if (activeUpdateHandle === 0) {
+      activeUpdateRespectFocus = respectFocus;
+      activeUpdateHandle = window.requestAnimationFrame(() => {
+        const rf = activeUpdateRespectFocus;
+        activeUpdateHandle = 0;
+        activeUpdateRespectFocus = true;
+        updateActiveLeaf(rf);
+      });
+    } else if (!respectFocus) {
+      activeUpdateRespectFocus = false;
+    }
+  }
+  function updateActiveLeaf(respectFocus) {
+    var _a;
+    const workspace = plugin.app.workspace;
+    if (workspace.activeLeaf !== leaf) return;
+    const contentEl = (_a = leaf.view) === null || _a === void 0 ? void 0 : _a.contentEl;
+    if (respectFocus && contentEl) {
+      const activeEl = contentEl.ownerDocument.activeElement;
+      if (activeEl && contentEl.contains(activeEl)) return;
+    }
+    const path = getTopVisibleNotePath();
+    if (!path) return;
+    const activeFile = plugin.app.workspace.getActiveFile();
+    if (activeFile && activeFile.path === path) return;
+    const targetLeaf = findEmbeddedLeaf(path);
+    if (targetLeaf) {
+      plugin.app.workspace.setActiveLeaf(targetLeaf, { focus: false });
+    }
   }
   function tick2() {
     check();
@@ -3443,6 +3512,7 @@ function instance($$self, $$props, $$invalidate) {
       visibleNotes.delete(file.path);
     }
     $$invalidate(4, visibleNotes);
+    scheduleActiveLeafUpdate(true);
   }
   function isToday(file) {
     var _a;
