@@ -66,13 +66,15 @@
 }
 
 /* On mobile the readable-line-width centering doesn't apply (the line width
-   usually exceeds the screen), so stripping the scroller padding above leaves
+   usually exceeds the screen), so stripping the editor padding above leaves
    text flush against the view's clipped left edge and cuts off the first
-   character of unindented lines. Restore the horizontal file margins while
-   keeping the vertical padding at zero so notes still stack tightly. */
-.is-mobile .dn-editor .cm-scroller {
-    padding-left: var(--file-margins, 16px) !important;
-    padding-right: var(--file-margins, 16px) !important;
+   character of unindented lines. Inset the whole embedded editor via our own
+   wrapper — the most reliable lever, independent of Obsidian's CM styling. A
+   concrete value is used because Obsidian defines --file-margins as 0 on
+   mobile. */
+.is-mobile .daily-note-view .daily-note-editor {
+    padding-left: var(--size-4-4);
+    padding-right: var(--size-4-4);
 }
 
 .daily-note-view .daily-note-wrapper::before {
