@@ -36,9 +36,12 @@
 
 /* On a phone the embedded editor's text column escapes ~1 character to the left
    of the pane's content edge, clipping the first letter of unindented lines
-   (indented lines and the title are unaffected). Nudge the CM content right so
-   the first character clears the clip and roughly aligns with the title. */
-.is-phone .dn-editor .cm-content {
+   (indented lines and the title are unaffected). Nudge the readable-width
+   column right so the first character clears the clip. Pad .cm-sizer (which
+   holds both the content and the in-document backlinks) rather than .cm-content
+   alone, so the body and backlinks shift together and keep their relative
+   widths. */
+.is-phone .dn-editor .cm-sizer {
     padding-left: var(--size-4-4) !important;
 }
 
