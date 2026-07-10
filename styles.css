@@ -29,31 +29,21 @@
     min-height: auto;
 }
 
-/* Scoped under .daily-note-view for specificity (0,3,0) so these win over other
-   plugins that style every editor globally with !important at (0,2,0) — e.g. a
-   block-editor plugin's `.cm-editor .cm-content { margin-left: -8px }`, which we
-   neutralize here so it doesn't shift the embedded notes. */
+/* Scoped to .daily-note-view (0,3,0) so it beats another plugin's global
+   `.cm-editor .cm-content { margin-left: -8px }`; we cancel that margin here. */
 .daily-note-view .dn-editor .cm-content {
     padding-bottom: 0 !important;
     padding-top: 0 !important;
     margin-left: 0 !important;
 }
 
-/* On a phone the embedded editor's text column escapes ~1 character to the left
-   of the pane's content edge, clipping the first letter of unindented lines
-   (indented lines and the title are unaffected). Nudge the readable-width
-   column right so the first character clears the clip. Pad .cm-sizer (which
-   holds both the content and the in-document backlinks) rather than .cm-content
-   alone, so the body and backlinks shift together and keep their relative
-   widths. */
+/* The plugin strips the editor's native side padding, which on a phone leaves
+   the content flush against the pane edge. Restore ~28px (a normal mobile note's
+   margin) on .cm-sizer, which wraps both the content and the in-document
+   backlinks so they stay aligned. */
 .is-phone .dn-editor .cm-sizer {
-    /* Match a normal mobile note's content margin. Obsidian's --file-margins
-       variable doesn't inherit into this embedded editor context, so it falls
-       through to the value below, which is the measured native margin
-       (~28px / --size-4-7). If a future Obsidian version does expose
-       --file-margins here, it will be used instead automatically. */
-    padding-left: var(--file-margins, var(--size-4-7)) !important;
-    padding-right: var(--file-margins, var(--size-4-7)) !important;
+    padding-left: 28px !important;
+    padding-right: 28px !important;
 }
 
 .dn-editor .view-content {
@@ -78,10 +68,8 @@
     display: none !important;
 }
 
-/* Scoped under .daily-note-view for specificity (0,3,0) so `padding: 0` wins
-   over a globally-applied `.cm-editor .cm-scroller { padding-right: 40px }` from
-   another plugin (both would otherwise be (0,2,0) !important and decided by load
-   order). */
+/* Scoped to .daily-note-view (0,3,0) so `padding: 0` beats another plugin's
+   global `.cm-editor .cm-scroller { padding-right: 40px }`. */
 .daily-note-view .dn-editor .cm-scroller {
     padding: 0 !important;
     overflow-y: clip;
