@@ -64,19 +64,6 @@
     mask: none !important;
     mask-image: none !important;
 }
-
-/* On mobile the readable-line-width centering doesn't apply (the line width
-   usually exceeds the screen), so stripping the editor padding above leaves
-   text flush against the view's clipped left edge and cuts off the first
-   character of unindented lines. Inset the whole embedded editor via our own
-   wrapper — the most reliable lever, independent of Obsidian's CM styling. A
-   concrete value is used because Obsidian defines --file-margins as 0 on
-   mobile. */
-.is-mobile .daily-note-view .daily-note-editor {
-    padding-left: var(--size-4-4);
-    padding-right: var(--size-4-4);
-}
-
 .daily-note-view .daily-note-wrapper::before {
     content: "";
     display: block;
