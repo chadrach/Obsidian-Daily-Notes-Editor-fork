@@ -34,13 +34,18 @@
     padding-top: 0 !important;
 }
 
-/* On mobile the embedded editor's text column sits ~1 character left of the
-   pane's content edge and the first letter of unindented lines is clipped (the
-   readable-line-width margins that protect it on desktop collapse on a narrow
-   screen). Nudge the content right, inside the scroller's clip, so the first
-   character is visible. */
+/* TEMP DIAGNOSTIC — remove after identifying the mobile clip. Bright outlines
+   show where each box actually sits; the large indent tests whether padding the
+   CM content moves the text at all. */
+.is-mobile .daily-note-view .daily-note-editor {
+    outline: 2px solid red !important;
+}
+.is-mobile .dn-editor .cm-scroller {
+    outline: 2px solid cyan !important;
+}
 .is-mobile .dn-editor .cm-content {
-    padding-left: var(--size-4-4) !important;
+    outline: 2px solid lime !important;
+    padding-left: 60px !important;
 }
 
 .dn-editor .view-content {
