@@ -34,18 +34,12 @@
     padding-top: 0 !important;
 }
 
-/* TEMP DIAGNOSTIC — remove after identifying the mobile clip. Bright outlines
-   show where each box actually sits; the large indent tests whether padding the
-   CM content moves the text at all. */
-.is-mobile .daily-note-view .daily-note-editor {
-    outline: 2px solid red !important;
-}
-.is-mobile .dn-editor .cm-scroller {
-    outline: 2px solid cyan !important;
-}
-.is-mobile .dn-editor .cm-content {
-    outline: 2px solid lime !important;
-    padding-left: 60px !important;
+/* On a phone the embedded editor's text column escapes ~1 character to the left
+   of the pane's content edge, clipping the first letter of unindented lines
+   (indented lines and the title are unaffected). Nudge the CM content right so
+   the first character clears the clip and roughly aligns with the title. */
+.is-phone .dn-editor .cm-content {
+    padding-left: var(--size-4-4) !important;
 }
 
 .dn-editor .view-content {
