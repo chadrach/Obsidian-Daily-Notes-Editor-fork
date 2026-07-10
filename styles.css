@@ -47,11 +47,13 @@
    alone, so the body and backlinks shift together and keep their relative
    widths. */
 .is-phone .dn-editor .cm-sizer {
-    /* Match Obsidian's native content margin (the same variable a normal note's
-       editor uses) rather than a hand-picked value, so it stays consistent with
-       the rest of the app across platforms and themes. */
-    padding-left: var(--file-margins, 16px) !important;
-    padding-right: var(--file-margins, 16px) !important;
+    /* Match a normal mobile note's content margin. Obsidian's --file-margins
+       variable doesn't inherit into this embedded editor context, so it falls
+       through to the value below, which is the measured native margin
+       (~28px / --size-4-7). If a future Obsidian version does expose
+       --file-margins here, it will be used instead automatically. */
+    padding-left: var(--file-margins, var(--size-4-7)) !important;
+    padding-right: var(--file-margins, var(--size-4-7)) !important;
 }
 
 .dn-editor .view-content {
