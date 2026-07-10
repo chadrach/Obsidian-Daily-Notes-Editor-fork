@@ -64,6 +64,17 @@
     mask: none !important;
     mask-image: none !important;
 }
+
+/* On mobile the readable-line-width centering doesn't apply (the line width
+   usually exceeds the screen), so stripping the scroller padding above leaves
+   text flush against the view's clipped left edge and cuts off the first
+   character of unindented lines. Restore the horizontal file margins while
+   keeping the vertical padding at zero so notes still stack tightly. */
+.is-mobile .dn-editor .cm-scroller {
+    padding-left: var(--file-margins, 16px) !important;
+    padding-right: var(--file-margins, 16px) !important;
+}
+
 .daily-note-view .daily-note-wrapper::before {
     content: "";
     display: block;
