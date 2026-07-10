@@ -47,7 +47,10 @@
    alone, so the body and backlinks shift together and keep their relative
    widths. */
 .is-phone .dn-editor .cm-sizer {
-    padding-left: 14px !important;
+    /* Left was 14px while another plugin's global -8px margin was in effect
+       (net 6px); now that we neutralize that margin above, 6px reproduces the
+       same left inset. The right was never affected by that margin. */
+    padding-left: 6px !important;
     padding-right: 14px !important;
 }
 
