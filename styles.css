@@ -29,9 +29,14 @@
     min-height: auto;
 }
 
-.dn-editor .cm-content {
+/* Scoped under .daily-note-view for specificity (0,3,0) so these win over other
+   plugins that style every editor globally with !important at (0,2,0) — e.g. a
+   block-editor plugin's `.cm-editor .cm-content { margin-left: -8px }`, which we
+   neutralize here so it doesn't shift the embedded notes. */
+.daily-note-view .dn-editor .cm-content {
     padding-bottom: 0 !important;
     padding-top: 0 !important;
+    margin-left: 0 !important;
 }
 
 /* On a phone the embedded editor's text column escapes ~1 character to the left
@@ -68,7 +73,11 @@
     display: none !important;
 }
 
-.dn-editor .cm-scroller {
+/* Scoped under .daily-note-view for specificity (0,3,0) so `padding: 0` wins
+   over a globally-applied `.cm-editor .cm-scroller { padding-right: 40px }` from
+   another plugin (both would otherwise be (0,2,0) !important and decided by load
+   order). */
+.daily-note-view .dn-editor .cm-scroller {
     padding: 0 !important;
     overflow-y: clip;
     -webkit-mask: none !important;
