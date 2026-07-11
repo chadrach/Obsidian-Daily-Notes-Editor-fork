@@ -38,12 +38,11 @@
 }
 
 /* The plugin strips the editor's native side padding, which on a phone leaves
-   the content flush against the pane edge. Restore ~28px (a normal mobile note's
-   margin) on .cm-sizer, which wraps both the content and the in-document
-   backlinks so they stay aligned. */
+   the content flush against the pane edge. Add it back on .cm-sizer, which wraps
+   both the content and the in-document backlinks so they stay aligned. */
 .is-phone .dn-editor .cm-sizer {
-    padding-left: 28px !important;
-    padding-right: 28px !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
 }
 
 .dn-editor .view-content {
